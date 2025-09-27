@@ -68,10 +68,10 @@ function createCompatibilityAspects(
         aspect: "Budget",
         user1Value: currentUser?.profileData?.budget_PKR
           ? `${currentUser.profileData.budget_PKR} PKR`
-          : "Your budget",
+          : "Flexible",
         user2Value: profileData?.budget_PKR
           ? `${profileData.budget_PKR} PKR`
-          : "Similar budget",
+          : "Flexible",
         match: "strong",
       });
     }
@@ -320,7 +320,6 @@ export function ProfileCardStack() {
 
   const matchData = useMemo(() => {
     if (!currentProfile || !currentMatch) return null;
-
     return {
       user: currentProfile,
       compatibilityScore: currentMatch.score,

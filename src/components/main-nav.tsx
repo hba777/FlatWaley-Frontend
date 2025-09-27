@@ -19,7 +19,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/matches', label: 'Matches', icon: Users },
   { href: '/rooms', label: 'Rooms', icon: BedDouble },
-  { href: '/chat', label: 'Chat', icon: MessageSquare },
+  // { href: '/chat', label: 'Chat', icon: MessageSquare },
 ];
 
 function ThemeToggle() {
