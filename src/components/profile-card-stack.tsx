@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import Image from 'next/image';
 import {
   BedDouble,
   BookOpen,
@@ -35,18 +34,18 @@ const iconMap = {
 // Convert MatchResult to UserProfile for compatibility with existing UI
 function convertMatchToUserProfile(match: MatchResult): UserProfile {
   return {
-    id: parseInt(match.id.slice(-4), 16) || Math.random() * 1000, // Convert string ID to number
-    name: `User ${match.id.slice(-4)}`, // Generate a name from ID
+    id: parseInt(match.profile_id.slice(-4), 16) || Math.random() * 1000, // Convert string ID to number
+    name: `User ${match.profile_id.slice(-4)}`, // Generate a name from ID
     age: 22, // Default age
-    university: `${match.city} University`, // Use city as university
-    bio: match.raw_profile_text || "Looking for a compatible roommate!",
-    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${match.id}`, // Generate avatar
+    university: 'University', // Default university
+    bio: "Looking for a compatible roommate!",
+    avatarUrl: '', // No avatar
     preferences: {
-      budget: `${match.budget_PKR} PKR`,
-      sleepSchedule: match.sleep_schedule || 'Flexible',
-      cleanliness: match.cleanliness || 'Average',
-      studyHabits: match.study_habits || 'Library',
-      socialHabits: match.noise_tolerance || 'Moderate',
+      budget: 'Flexible', // Default budget
+      sleepSchedule: 'Flexible',
+      cleanliness: 'Average',
+      studyHabits: 'Library',
+      socialHabits: 'Moderate',
     },
   };
 }
@@ -55,31 +54,45 @@ function convertMatchToUserProfile(match: MatchResult): UserProfile {
 function createCompatibilityAspects(match: MatchResult): CompatibilityAspect[] {
   const aspects: CompatibilityAspect[] = [];
   
-  // Parse compatibility explanation
-  const explanations = match.compatibility_explanation.split(';').map(e => e.trim());
-  
-  explanations.forEach(explanation => {
-    if (explanation.includes('Budget')) {
+  // Map reasons to compatibility aspects
+  match.reasons.forEach(reason => {
+    if (reason.toLowerCase().includes('budget')) {
       aspects.push({
         aspect: 'Budget',
         user1Value: 'Your budget',
-        user2Value: `${match.budget_PKR} PKR`,
-        match: explanation.includes('similar') ? 'strong' : 'partial'
-      });
-    }
-    if (explanation.includes('Sleep')) {
-      aspects.push({
-        aspect: 'Sleep Schedule',
-        user1Value: 'Your schedule',
-        user2Value: match.sleep_schedule || 'Flexible',
+        user2Value: 'Similar budget',
         match: 'strong'
       });
     }
-    if (explanation.includes('Cleanliness')) {
+    if (reason.toLowerCase().includes('sleep')) {
+      aspects.push({
+        aspect: 'Sleep Schedule',
+        user1Value: 'Your schedule',
+        user2Value: 'Compatible schedule',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('cleanliness')) {
       aspects.push({
         aspect: 'Cleanliness',
         user1Value: 'Your preference',
-        user2Value: match.cleanliness || 'Average',
+        user2Value: 'Compatible preference',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('noise')) {
+      aspects.push({
+        aspect: 'Social Habits',
+        user1Value: 'Your tolerance',
+        user2Value: 'Compatible tolerance',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('study')) {
+      aspects.push({
+        aspect: 'Study Habits',
+        user1Value: 'Your habits',
+        user2Value: 'Compatible habits',
         match: 'strong'
       });
     }
@@ -217,7 +230,7 @@ export function ProfileCardStack() {
     
     return {
       user: currentProfile,
-      compatibilityScore: currentMatch.compatibility_score,
+      compatibilityScore: currentMatch.score,
       compatibilityAspects: createCompatibilityAspects(currentMatch)
     };
   }, [currentProfile, currentMatch]);
@@ -314,15 +327,6 @@ export function ProfileCardStack() {
               onTouchEnd={status === 'active' ? handleDragEnd : undefined}
             >
               <CardContent className="p-4 h-full flex flex-col">
-                <div className="relative h-1/2 w-full mb-4">
-                  <Image
-                    src={profile.avatarUrl}
-                    alt={profile.name}
-                    fill
-                    className="rounded-lg object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
                 <div className="flex-1 flex flex-col">
                    <div className="flex items-baseline gap-2">
                         <h3 className="text-2xl font-bold">{profile.name}, {profile.age}</h3>
@@ -367,7 +371,7 @@ export function ProfileCardStack() {
               age: 22,
               university: 'Your University',
               bio: 'Your profile',
-              avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`,
+              avatarUrl: '',
               preferences: {
                 budget: 'Your budget',
                 sleepSchedule: 'Your schedule',

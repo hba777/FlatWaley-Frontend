@@ -1,19 +1,9 @@
 import api from '@/utils/api';
 
 export interface MatchResult {
-  id: string;
   profile_id: string;
-  raw_profile_text: string;
-  city: string;
-  area: string;
-  budget_PKR: number;
-  sleep_schedule?: string;
-  cleanliness?: string;
-  noise_tolerance?: string;
-  study_habits?: string;
-  food_pref?: string;
-  compatibility_score: number;
-  compatibility_explanation: string;
+  score: number;
+  reasons: string[];
 }
 
 class MatcherApiService {
