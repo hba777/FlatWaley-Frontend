@@ -32,6 +32,14 @@ export type RoomListing = {
   availableRooms: number;
   amenities: string[];
   images: string[];
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  description?: string;
+  propertyType?: string;
+  size?: string;
+  deposit?: number;
 };
 
 export type CompatibilityAspect = {

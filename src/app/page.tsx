@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Search, Users, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
+import { AuthModal } from '@/components/auth-modal';
 
 export default function Home() {
   return (
@@ -26,12 +27,12 @@ export default function Home() {
               Discover your perfect roommate with the power of AI. Find compatible living partners and your next home, seamlessly.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="text-lg">
-                <Link href="/onboarding">
+              <AuthModal>
+                <Button size="lg" className="text-lg">
                   Find Your Match
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+                </Button>
+              </AuthModal>
             </div>
           </div>
         </section>
@@ -40,7 +41,7 @@ export default function Home() {
         <section id="features" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">Why RoomHarmony?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold">Why FlatWaley?</h2>
               <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
                 Our platform is designed to make finding a roommate and a room as easy as possible.
               </p>
@@ -109,17 +110,17 @@ export default function Home() {
         {/* CTA Section */}
         <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold">Ready to Find Your Roommate?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Ready to Find Your Flat Wala?</h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Join RoomHarmony today and take the first step towards a better living experience.
+              Join Flat Waley today and take the first step towards a better living experience.
             </p>
             <div className="mt-8">
-              <Button asChild size="lg" className="text-lg">
-                <Link href="/onboarding">
+              <AuthModal>
+                <Button size="lg" className="text-lg">
                   Get Started for Free
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+                </Button>
+              </AuthModal>
             </div>
           </div>
         </section>
@@ -127,7 +128,7 @@ export default function Home() {
 
       <footer className="py-6 bg-secondary/30 border-t">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} RoomHarmony. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} FlatWaley. All rights reserved.</p>
         </div>
       </footer>
     </div>

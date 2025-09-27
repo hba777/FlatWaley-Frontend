@@ -14,8 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { currentUser } from '@/lib/data';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -81,7 +79,7 @@ export function MainNav() {
       <div className="md:hidden">
         <header className="flex items-center justify-between p-4 border-b">
           <Link href="/dashboard" className="font-bold text-lg">
-            RoomHarmony
+            FlatWaley
           </Link>
           <div className='flex items-center gap-2'>
             <ThemeToggle />
@@ -114,18 +112,6 @@ export function MainNav() {
         </div>
         <div className="flex-1 overflow-y-auto">
           <NavContent />
-        </div>
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-              <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-semibold">{currentUser.name}</p>
-              <p className="text-sm text-muted-foreground">@{currentUser.name.toLowerCase()}</p>
-            </div>
-          </div>
         </div>
       </aside>
     </>

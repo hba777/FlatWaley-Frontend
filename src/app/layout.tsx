@@ -3,9 +3,10 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
+import { UserProvider } from '@/context/UserContext';
 
 export const metadata: Metadata = {
-  title: 'RoomHarmony',
+  title: 'Flat Waley',
   description: 'Find your perfect roommate with AI',
 };
 
@@ -33,8 +34,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <UserProvider>
+            {children}
+            <Toaster />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>
