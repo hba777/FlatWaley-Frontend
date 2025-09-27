@@ -105,6 +105,7 @@ export function UserProvider({ children }: UserProviderProps) {
       console.log(userData);
       
       // Check if user is verified
+      console.log('User verification status:', userData.is_verified, typeof userData.is_verified);
       // if (!userData.is_verified) {
       //   // Try to refresh user data in case verification status changed
       //   try {
@@ -176,6 +177,16 @@ export function UserProvider({ children }: UserProviderProps) {
         ...userData,
         token: authResponse.access_token,
       });
+
+      // Fetch profile data if profile_id exists
+      if (userData.profile_id) {
+        try {
+          const profileData = await userApi.getUserProfileData(userData.profile_id);
+          setUser(prev => prev ? { ...prev, profileData } : null);
+        } catch (error) {
+          console.error("Failed to fetch profile data:", error);
+        }
+      }
       // Cookies are automatically handled by axios
     } catch (error) {
       throw error;
