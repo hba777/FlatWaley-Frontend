@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    --background: 210 68% 5%; /* #030D15 */
+    --background: 0 0% 4%; /* #0A0A0A */
     --foreground: 0 0% 97%; /* #F7F7F7 */
-    --card: 206 74% 13%; /* #0A2A38 */
+    --card: 0 0% 8%; /* #141414 */
     --card-foreground: 0 0% 97%; /* #F7F7F7 */
-    --popover: 210 68% 5%; /* #030D15 */
+    --popover: 0 0% 4%; /* #0A0A0A */
     --popover-foreground: 0 0% 97%; /* #F7F7F7 */
     --primary: 177 73% 35%; /* #1BA098 */
     --primary-foreground: 0 0% 97%; /* #F7F7F7 */
-    --secondary: 206 74% 13%; /* #0A2A38 */
+    --secondary: 0 0% 15%; /* #262626 */
     --secondary-foreground: 0 0% 97%; /* #F7F7F7 */
-    --muted: 206 74% 13%; /* #0A2A38 */
-    --muted-foreground: 194 15% 72%; /* #A9BDC2 */
+    --muted: 0 0% 15%; /* #262626 */
+    --muted-foreground: 0 0% 60%; /* #999999 */
     --accent: 177 73% 35%; /* #1BA098 */
     --accent-foreground: 0 0% 97%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 97%;
-    --border: 205 28% 19%; /* #233740 */
-    --input: 205 28% 19%; /* #233740 */
+    --border: 0 0% 15%; /* #262626 */
+    --input: 0 0% 15%; /* #262626 */
     --ring: 177 73% 35%; /* #1BA098 */
     --radius: 0.75rem;
 
