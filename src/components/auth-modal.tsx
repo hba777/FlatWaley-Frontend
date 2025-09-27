@@ -95,7 +95,7 @@ function AuthForm({
   onAuthenticated?: (token: string) => void;
 }) {
   const router = useRouter();
-  const { login, register, signInWithGoogle, loginAsGuest, resendVerificationEmail } = useUser();
+  const { user, login, register, signInWithGoogle, loginAsGuest, resendVerificationEmail } = useUser();
   const { toast } = useToast();
   const isSignUp = view === 'signup';
   const [loading, setLoading] = useState(false);
@@ -148,9 +148,14 @@ function AuthForm({
   const handleAuthSuccess = useCallback(
     () => {
       onAuthenticated?.('');
-      router.push('/onboarding');
+      // Check if user has a profile to determine redirect
+      if (user?.profile_id) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
     },
-    [onAuthenticated, router]
+    [onAuthenticated, router, user]
   );
 
   const onSubmit = async (values: any) => {
