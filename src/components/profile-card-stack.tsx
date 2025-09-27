@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useMemo } from "react";
+import Image from "next/image";
 import { useState, useMemo, useEffect } from 'react';
 import {
   BedDouble,
@@ -11,17 +13,17 @@ import {
   Heart,
   Loader2,
   RefreshCw,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { CompatibilityExplainer } from './compatibility-explainer';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { CompatibilityExplainer } from "./compatibility-explainer";
 import { matcherApi, type MatchResult } from '@/services/matcherApi';
-import { useUser } from '@/context/UserContext';
-import type { UserProfile, CompatibilityAspect } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { useUser } from "@/context/UserContext";
+import type { UserProfile, CompatibilityAspect } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const iconMap = {
   budget: CircleDollarSign,
@@ -105,29 +107,49 @@ function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score
     const aspects: CompatibilityAspect[] = [];
     let score = 100;
 
-    const budget1 = parseInt(user1.preferences.budget.split('-')[0].replace('$', ''));
-    const budget2 = parseInt(user2.preferences.budget.split('-')[0].replace('$', ''));
-    const budgetDiff = Math.abs(budget1 - budget2);
-    
-    let budgetMatch: 'strong' | 'partial' | 'conflict' = 'strong';
-    if (budgetDiff > 400) {
-        score -= 25;
-        budgetMatch = 'conflict';
-    } else if (budgetDiff > 0) {
-        score -= 10;
-        budgetMatch = 'partial';
-    }
-    aspects.push({ aspect: 'Budget', user1Value: user1.preferences.budget, user2Value: user2.preferences.budget, match: budgetMatch });
+  const budget1 = parseInt(
+    user1.preferences.budget.split("-")[0].replace("$", "")
+  );
+  const budget2 = parseInt(
+    user2.preferences.budget.split("-")[0].replace("$", "")
+  );
+  const budgetDiff = Math.abs(budget1 - budget2);
 
-    let sleepMatch: 'strong' | 'partial' | 'conflict' = 'strong';
-    if (user1.preferences.sleepSchedule !== user2.preferences.sleepSchedule && (user1.preferences.sleepSchedule !== 'Flexible' && user2.preferences.sleepSchedule !== 'Flexible')) {
-        score -= 20;
-        sleepMatch = 'conflict';
-    } else if (user1.preferences.sleepSchedule !== user2.preferences.sleepSchedule) {
-        score -= 5;
-        sleepMatch = 'partial';
-    }
-     aspects.push({ aspect: 'Sleep Schedule', user1Value: user1.preferences.sleepSchedule, user2Value: user2.preferences.sleepSchedule, match: sleepMatch });
+  let budgetMatch: "strong" | "partial" | "conflict" = "strong";
+  if (budgetDiff > 400) {
+    score -= 25;
+    budgetMatch = "conflict";
+  } else if (budgetDiff > 0) {
+    score -= 10;
+    budgetMatch = "partial";
+  }
+  aspects.push({
+    aspect: "Budget",
+    user1Value: user1.preferences.budget,
+    user2Value: user2.preferences.budget,
+    match: budgetMatch,
+  });
+
+  let sleepMatch: "strong" | "partial" | "conflict" = "strong";
+  if (
+    user1.preferences.sleepSchedule !== user2.preferences.sleepSchedule &&
+    user1.preferences.sleepSchedule !== "Flexible" &&
+    user2.preferences.sleepSchedule !== "Flexible"
+  ) {
+    score -= 20;
+    sleepMatch = "conflict";
+  } else if (
+    user1.preferences.sleepSchedule !== user2.preferences.sleepSchedule
+  ) {
+    score -= 5;
+    sleepMatch = "partial";
+  }
+  aspects.push({
+    aspect: "Sleep Schedule",
+    user1Value: user1.preferences.sleepSchedule,
+    user2Value: user2.preferences.sleepSchedule,
+    match: sleepMatch,
+  });
 
     const cleanlinessLevels: Record<string, number> = {'Very Tidy': 3, 'Moderately Tidy': 2, 'Relaxed': 1};
     const cleanDiff = Math.abs((cleanlinessLevels[user1.preferences.cleanliness] || 2) - (cleanlinessLevels[user2.preferences.cleanliness] || 2));
@@ -141,9 +163,8 @@ function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score
     }
      aspects.push({ aspect: 'Cleanliness', user1Value: user1.preferences.cleanliness, user2Value: user2.preferences.cleanliness, match: cleanMatch });
 
-    return { score: Math.max(0, score), aspects };
+  return { score: Math.max(0, score), aspects };
 }
-
 
 export function ProfileCardStack() {
   const { user: currentUser } = useUser();
@@ -224,7 +245,7 @@ export function ProfileCardStack() {
     }
     setDragStart(null);
   };
-  
+
   const matchData = useMemo(() => {
     if (!currentProfile || !currentMatch) return null;
     
@@ -285,14 +306,14 @@ export function ProfileCardStack() {
   }
 
   const getCardStatus = (index: number) => {
-    if (index < currentIndex) return 'gone';
+    if (index < currentIndex) return "gone";
     if (index === currentIndex) {
-      if (action === 'like') return 'exiting-right';
-      if (action === 'dislike') return 'exiting-left';
-      return 'active';
+      if (action === "like") return "exiting-right";
+      if (action === "dislike") return "exiting-left";
+      return "active";
     }
-    if (index === currentIndex + 1) return 'next';
-    return 'inactive';
+    if (index === currentIndex + 1) return "next";
+    return "inactive";
   };
 
   return (
@@ -300,10 +321,10 @@ export function ProfileCardStack() {
       <div className="relative w-full max-w-sm h-[450px]">
         {profiles.map((profile, index) => {
           const status = getCardStatus(index);
-          if (index < currentIndex -1 || index > currentIndex + 2) return null;
+          if (index < currentIndex - 1 || index > currentIndex + 2) return null;
 
           return (
-             <Card
+            <Card
               key={profile.id}
               data-status={status}
               className={cn(
@@ -328,22 +349,30 @@ export function ProfileCardStack() {
             >
               <CardContent className="p-4 h-full flex flex-col">
                 <div className="flex-1 flex flex-col">
-                   <div className="flex items-baseline gap-2">
-                        <h3 className="text-2xl font-bold">{profile.name}, {profile.age}</h3>
-                   </div>
-                  <p className="text-sm text-muted-foreground">{profile.university}</p>
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="text-2xl font-bold">
+                      {profile.name}, {profile.age}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {profile.university}
+                  </p>
                   <p className="my-3 text-sm flex-1">{profile.bio}</p>
                   <div className="flex flex-wrap gap-2">
-                      {Object.keys(profile.preferences).map((key) => {
-                          const prefKey = key as keyof typeof iconMap;
-                          const Icon = iconMap[prefKey];
-                          return (
-                            <Badge key={key} variant="secondary" className="flex items-center gap-1">
-                                <Icon className="h-3 w-3" />
-                                {profile.preferences[prefKey]}
-                            </Badge>
-                          )
-                      })}
+                    {Object.keys(profile.preferences).map((key) => {
+                      const prefKey = key as keyof typeof iconMap;
+                      const Icon = iconMap[prefKey];
+                      return (
+                        <Badge
+                          key={key}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          <Icon className="h-3 w-3" />
+                          {profile.preferences[prefKey]}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
               </CardContent>
@@ -351,12 +380,22 @@ export function ProfileCardStack() {
           );
         })}
       </div>
-      
+
       <div className="flex gap-4">
-        <Button variant="outline" size="icon" className="h-16 w-16 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500" onClick={() => handleAction('dislike')}>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-16 w-16 rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500"
+          onClick={() => handleAction("dislike")}
+        >
           <X className="h-8 w-8" />
         </Button>
-        <Button variant="outline" size="icon" className="h-16 w-16 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500" onClick={() => handleAction('like')}>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-16 w-16 rounded-full border-green-500/50 text-green-500 hover:bg-green-500/10 hover:text-green-500"
+          onClick={() => handleAction("like")}
+        >
           <Heart className="h-8 w-8" />
         </Button>
       </div>
