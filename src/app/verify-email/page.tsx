@@ -29,7 +29,7 @@ export default function VerifyEmailPage() {
       try {
         await verifyEmailWithToken(token, email);
         setStatus('success');
-        setMessage('Email verified successfully! You can now access all features.');
+        setMessage('Email verified successfully! You are now logged in and can access all features.');
       } catch (error: any) {
         setStatus('error');
         setMessage(error.message || 'Email verification failed. Please try again.');
@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
 
           {status === 'success' && (
             <Button onClick={handleContinue} className="w-full">
-              Continue to Dashboard
+              {user ? 'Continue to Dashboard' : 'Go to Login'}
             </Button>
           )}
 

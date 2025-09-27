@@ -71,13 +71,14 @@ class UserApiService {
     }
   }
 
-  async getUserProfile(token: string): Promise<UserResponse> {
+  async getUserProfile(token?: string): Promise<UserResponse> {
     try {
-      const response = await api.get<UserResponse>('/users/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // If token is provided, set it as a cookie first
+      if (token) {
+        document.cookie = `access_token=${token}; path=/; samesite=lax`;
+      }
+      
+      const response = await api.get<UserResponse>('/users/me');
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to get user profile';

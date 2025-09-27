@@ -197,7 +197,7 @@ export function UserProvider({ children }: UserProviderProps) {
       const result = await userApi.verifyEmailWithToken(token, email);
       
       if (result.access_token) {
-        // If we got a new token, get the updated user data
+        // Get the updated user data using the new token (this will set the cookie)
         const userData = await userApi.getUserProfile(result.access_token);
         setUser({
           ...userData,
