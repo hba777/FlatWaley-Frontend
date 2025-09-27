@@ -92,7 +92,7 @@ export default function MatchesPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h1 className="text-3xl font-bold tracking-tight mb-2">Your Matches</h1>
-      <p className="text-muted-foreground mb-8">
+      <p className="text-xl italic font-serif text-muted-foreground  mb-8">
         Explore your matches and find the perfect room together!
       </p>
 
