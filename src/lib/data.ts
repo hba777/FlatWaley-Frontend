@@ -113,6 +113,11 @@ export const roomListings: RoomListing[] = [
         availableRooms: 1,
         amenities: ['In-unit laundry', 'Gym', 'Pool', 'Parking'],
         images: ['https://picsum.photos/seed/room1/800/600', 'https://picsum.photos/seed/room2/800/600'],
+        coordinates: { lat: 37.4419, lng: -122.1430 },
+        description: 'Beautiful modern apartment just 5 minutes walk from Stanford University. Features hardwood floors, updated kitchen with stainless steel appliances, and a private balcony overlooking the courtyard.',
+        propertyType: 'Apartment',
+        size: '1200 sq ft',
+        deposit: 2800,
     },
     {
         id: 2,
@@ -122,6 +127,11 @@ export const roomListings: RoomListing[] = [
         availableRooms: 1,
         amenities: ['Furnished', 'Utilities included', 'Near BART'],
         images: ['https://picsum.photos/seed/room3/800/600', 'https://picsum.photos/seed/room4/800/600'],
+        coordinates: { lat: 37.8719, lng: -122.2585 },
+        description: 'Charming room in a historic Berkeley home. Shared kitchen and living areas with friendly housemates. Perfect for students who want a community feel.',
+        propertyType: 'House',
+        size: '150 sq ft',
+        deposit: 1100,
     },
     {
         id: 3,
@@ -131,6 +141,11 @@ export const roomListings: RoomListing[] = [
         availableRooms: 2,
         amenities: ['Pet friendly', 'Balcony', 'Parking'],
         images: ['https://picsum.photos/seed/room5/800/600'],
+        coordinates: { lat: 37.3382, lng: -121.8863 },
+        description: 'Large apartment in the heart of downtown San Jose. Close to tech companies, restaurants, and nightlife. Pet-friendly building with on-site parking.',
+        propertyType: 'Apartment',
+        size: '900 sq ft',
+        deposit: 1500,
     },
     {
         id: 4,
@@ -140,6 +155,11 @@ export const roomListings: RoomListing[] = [
         availableRooms: 1,
         amenities: ['In-unit laundry', 'Furnished', 'A/C'],
         images: ['https://picsum.photos/seed/room1/800/600'],
+        coordinates: { lat: 37.4419, lng: -122.1430 },
+        description: 'Perfect studio apartment for focused students. Quiet building with excellent study environment. All utilities included except internet.',
+        propertyType: 'Studio',
+        size: '400 sq ft',
+        deposit: 1800,
     },
 ];
 

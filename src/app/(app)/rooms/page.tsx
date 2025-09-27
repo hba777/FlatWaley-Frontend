@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,7 @@ import { roomListings } from '@/lib/data';
 
 export default function RoomsPage() {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-background">
       <header className="p-4 border-b">
         <h1 className="text-3xl font-bold tracking-tight">Room Hunter</h1>
         <p className="text-muted-foreground">Find your next home.</p>
@@ -90,7 +91,9 @@ export default function RoomsPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full">View Details</Button>
+                    <Link href={`/rooms/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                    </Link>
                 </CardFooter>
               </Card>
             ))}
