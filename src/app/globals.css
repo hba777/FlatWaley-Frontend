@@ -4,35 +4,6 @@
 
 @layer base {
   :root {
-    --background: 0 0% 4%; /* #0A0A0A */
-    --foreground: 0 0% 97%; /* #F7F7F7 */
-    --card: 0 0% 8%; /* #141414 */
-    --card-foreground: 0 0% 97%; /* #F7F7F7 */
-    --popover: 0 0% 4%; /* #0A0A0A */
-    --popover-foreground: 0 0% 97%; /* #F7F7F7 */
-    --primary: 177 73% 35%; /* #1BA098 */
-    --primary-foreground: 0 0% 97%; /* #F7F7F7 */
-    --secondary: 0 0% 15%; /* #262626 */
-    --secondary-foreground: 0 0% 97%; /* #F7F7F7 */
-    --muted: 0 0% 15%; /* #262626 */
-    --muted-foreground: 0 0% 60%; /* #999999 */
-    --accent: 177 73% 35%; /* #1BA098 */
-    --accent-foreground: 0 0% 97%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 97%;
-    --border: 0 0% 15%; /* #262626 */
-    --input: 0 0% 15%; /* #262626 */
-    --ring: 177 73% 35%; /* #1BA098 */
-    --radius: 0.75rem;
-
-    --chart-1: 177 73% 35%;
-    --chart-2: 177 73% 30%;
-    --chart-3: 194 15% 72%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
-
-  .light {
     --background: 0 0% 97%; /* #F7F7F7 */
     --foreground: 210 68% 5%; /* #030D15 */
     --card: 0 0% 100%; /* #FFFFFF */
@@ -52,6 +23,41 @@
     --border: 200 13% 88%; /* #D9E0E2 */
     --input: 200 13% 88%; /* #D9E0E2 */
     --ring: 177 73% 35%; /* #1BA098 */
+    --radius: 0.75rem;
+    
+    --chart-1: 177 73% 35%;
+    --chart-2: 177 73% 30%;
+    --chart-3: 194 15% 72%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 0 0% 4%; /* #0A0A0A */
+    --foreground: 0 0% 97%; /* #F7F7F7 */
+    --card: 0 0% 8%; /* #141414 */
+    --card-foreground: 0 0% 97%; /* #F7F7F7 */
+    --popover: 0 0% 4%; /* #0A0A0A */
+    --popover-foreground: 0 0% 97%; /* #F7F7F7 */
+    --primary: 194 15% 72%; /* #A9BDC2 */
+    --primary-foreground: 0 0% 10%; /* #1A1A1A */
+    --secondary: 0 0% 15%; /* #262626 */
+    --secondary-foreground: 0 0% 97%; /* #F7F7F7 */
+    --muted: 0 0% 15%; /* #262626 */
+    --muted-foreground: 0 0% 60%; /* #999999 */
+    --accent: 194 15% 72%; /* #A9BDC2 */
+    --accent-foreground: 0 0% 10%; /* #1A1A1A */
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 97%;
+    --border: 0 0% 15%; /* #262626 */
+    --input: 0 0% 15%; /* #262626 */
+    --ring: 194 15% 72%; /* #A9BDC2 */
+
+    --chart-1: 194 15% 72%;
+    --chart-2: 194 15% 62%;
+    --chart-3: 194 15% 52%;
+    --chart-4: 194 15% 42%;
+    --chart-5: 194 15% 32%;
   }
 }
 
