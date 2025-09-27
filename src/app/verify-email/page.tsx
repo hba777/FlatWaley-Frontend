@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
 
   const handleContinue = () => {
     if (user) {
-      router.push('/dashboard');
+      router.push('/onboarding');
     } else {
       router.push('/');
     }
@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
 
           {status === 'success' && (
             <Button onClick={handleContinue} className="w-full">
-              {user ? 'Continue to Dashboard' : 'Go to Login'}
+              {user ? 'Continue to Onboarding' : 'Go to Login'}
             </Button>
           )}
 
