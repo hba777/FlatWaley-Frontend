@@ -27,6 +27,19 @@ export interface UserResponse {
   is_verified?: boolean;
 }
 
+export interface UserProfileData {
+  id: string;
+  raw_profile_text: string;
+  city: string;
+  area: string;
+  budget_PKR: number;
+  sleep_schedule?: string;
+  cleanliness?: string;
+  noise_tolerance?: string;
+  study_habits?: string;
+  food_pref?: string;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -132,6 +145,16 @@ class UserApiService {
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || error.message || 'Logout failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async getUserProfileData(profileId: string): Promise<UserProfileData> {
+    try {
+      const response = await api.get<UserProfileData>(`/profiles/${profileId}`);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to get user profile data';
       throw new Error(errorMessage);
     }
   }
