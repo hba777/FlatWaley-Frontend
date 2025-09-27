@@ -54,7 +54,11 @@ function convertMatchToUserProfile(match: MatchResult): UserProfile {
 }
 
 // Create compatibility aspects from match data
-function createCompatibilityAspects(match: MatchResult, currentUser: any, profileData?: any): CompatibilityAspect[] {
+function createCompatibilityAspects(
+  match: MatchResult,
+  currentUser: any,
+  profileData?: any
+): CompatibilityAspect[] {
   const aspects: CompatibilityAspect[] = [];
   
   // Map reasons to compatibility aspects
@@ -104,9 +108,12 @@ function createCompatibilityAspects(match: MatchResult, currentUser: any, profil
   return aspects;
 }
 
-function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score: number, aspects: CompatibilityAspect[] } {
-    const aspects: CompatibilityAspect[] = [];
-    let score = 100;
+function calculateCompatibility(
+  user1: UserProfile,
+  user2: UserProfile
+): { score: number, aspects: CompatibilityAspect[] } {
+  const aspects: CompatibilityAspect[] = [];
+  let score = 100;
 
   const budget1 = parseInt(
     user1.preferences.budget.split("-")[0].replace("$", "")
@@ -152,17 +159,29 @@ function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score
     match: sleepMatch,
   });
 
-    const cleanlinessLevels: Record<string, number> = {'Very Tidy': 3, 'Moderately Tidy': 2, 'Relaxed': 1};
-    const cleanDiff = Math.abs((cleanlinessLevels[user1.preferences.cleanliness] || 2) - (cleanlinessLevels[user2.preferences.cleanliness] || 2));
-    let cleanMatch: 'strong' | 'partial' | 'conflict' = 'strong';
-    if (cleanDiff > 1) {
-        score -= 25;
-        cleanMatch = 'conflict';
-    } else if (cleanDiff === 1) {
-        score -= 10;
-        cleanMatch = 'partial';
-    }
-     aspects.push({ aspect: 'Cleanliness', user1Value: user1.preferences.cleanliness, user2Value: user2.preferences.cleanliness, match: cleanMatch });
+  const cleanlinessLevels: Record<string, number> = {
+    'Very Tidy': 3,
+    'Moderately Tidy': 2,
+    'Relaxed': 1
+  };
+  const cleanDiff = Math.abs(
+    (cleanlinessLevels[user1.preferences.cleanliness] || 2) -
+    (cleanlinessLevels[user2.preferences.cleanliness] || 2)
+  );
+  let cleanMatch: 'strong' | 'partial' | 'conflict' = 'strong';
+  if (cleanDiff > 1) {
+    score -= 25;
+    cleanMatch = 'conflict';
+  } else if (cleanDiff === 1) {
+    score -= 10;
+    cleanMatch = 'partial';
+  }
+  aspects.push({
+    aspect: 'Cleanliness',
+    user1Value: user1.preferences.cleanliness,
+    user2Value: user2.preferences.cleanliness,
+    match: cleanMatch
+  });
 
   return { score: Math.max(0, score), aspects };
 }
