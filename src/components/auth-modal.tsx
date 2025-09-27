@@ -273,7 +273,7 @@ function AuthForm({
         </div>
       )}
       
-      {showVerificationMessage && !isSignUp && (
+      {/* {showVerificationMessage && !isSignUp && (
         <div className="text-green-600 text-sm bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-4">
           <p className="font-medium">Verification email sent!</p>
           <p className="text-xs mt-1">Please check your inbox and verify your email before signing in.</p>
@@ -288,7 +288,7 @@ function AuthForm({
             Resend verification email
           </Button>
         </div>
-      )}
+      )} */}
       
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {!isSignUp && (
