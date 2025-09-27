@@ -1,11 +1,17 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare } from 'lucide-react';
-import { matchedUsers } from '@/lib/data';
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageSquare } from "lucide-react";
+import { matchedUsers } from "@/lib/data";
 
 export default function MatchesPage() {
   return (
@@ -14,7 +20,7 @@ export default function MatchesPage() {
       <p className="text-muted-foreground mb-8">
         These are the people you've connected with. Start a conversation!
       </p>
-      
+
       {matchedUsers.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {matchedUsers.map((user) => (
@@ -25,7 +31,9 @@ export default function MatchesPage() {
                   <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <h3 className="text-xl font-semibold">{user.name}</h3>
-                <p className="text-muted-foreground text-sm">{user.university}</p>
+                <p className="text-muted-foreground text-sm">
+                  {user.university}
+                </p>
                 <p className="mt-3 text-sm flex-1">{user.bio}</p>
               </CardContent>
               <CardFooter className="p-4 border-t">

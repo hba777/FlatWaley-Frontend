@@ -1,4 +1,4 @@
-import api from '@/utils/api';
+import api from "@/utils/api";
 
 export interface ParseProfileRequest {
   raw_profile_text: string;
@@ -44,22 +44,36 @@ export interface ProfileResponse {
 class ParseApiService {
   async parseProfile(text: string): Promise<ParseProfileResponse> {
     try {
-      const response = await api.post<ParseProfileResponse>('/ai/parse-profile', {
-        raw_profile_text: text,
-      });
+      const response = await api.post<ParseProfileResponse>(
+        "/ai/parse-profile",
+        {
+          raw_profile_text: text,
+        }
+      );
       return response.data;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || error.message || 'Profile parsing failed';
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "Profile parsing failed";
       throw new Error(errorMessage);
     }
   }
 
-  async createProfile(profileData: ProfileCreateRequest): Promise<ProfileResponse> {
+  async createProfile(
+    profileData: ProfileCreateRequest
+  ): Promise<ProfileResponse> {
     try {
-      const response = await api.post<ProfileResponse>('/profiles', profileData);
+      const response = await api.post<ProfileResponse>(
+        "/profiles",
+        profileData
+      );
       return response.data;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || error.message || 'Profile creation failed';
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "Profile creation failed";
       throw new Error(errorMessage);
     }
   }
