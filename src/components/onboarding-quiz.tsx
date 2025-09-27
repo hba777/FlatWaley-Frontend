@@ -98,8 +98,7 @@ export function OnboardingQuiz() {
      )
   }
 
-  const { key, question, icon: Icon } = quizSteps[currentStep] || {};
-  const options = key ? preferenceOptions[key as keyof typeof preferenceOptions] : [];
+  const stepData = quizSteps[currentStep];
 
   return (
     <Card className="w-full max-w-lg mx-auto my-12">
@@ -108,25 +107,31 @@ export function OnboardingQuiz() {
             {currentStep > 0 && <Button variant="ghost" size="icon" onClick={handlePrevious}><ArrowLeft/></Button>}
             <Progress value={progress} className="w-full" />
         </div>
-        <CardTitle className="flex items-center gap-3 text-2xl">
-          <Icon className="h-8 w-8 text-primary" />
-          {question}
-        </CardTitle>
+        {stepData ? (
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            <stepData.icon className="h-8 w-8 text-primary" />
+            {stepData.question}
+          </CardTitle>
+        ) : (
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            Ready to Go?
+          </CardTitle>
+        )}
       </CardHeader>
       <CardContent>
         {currentStep < totalSteps ? (
           <div className="grid grid-cols-1 gap-4">
-            {options.map((option) => (
+            {stepData && preferenceOptions[stepData.key as keyof typeof preferenceOptions].map((option) => (
               <Button
                 key={option}
                 variant="outline"
                 size="lg"
                 className={cn(
                   "justify-start text-base h-14",
-                  preferences[key] === option &&
+                  preferences[stepData.key] === option &&
                     "border-primary ring-2 ring-primary"
                 )}
-                onClick={() => handleSelect(key, option)}
+                onClick={() => handleSelect(stepData.key, option)}
               >
                 {option}
               </Button>
