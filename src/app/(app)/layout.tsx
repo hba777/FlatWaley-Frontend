@@ -1,11 +1,7 @@
-import { MainNav } from '@/components/main-nav';
-import { AppHeader } from '@/components/app-header';
+import { MainNav } from "@/components/main-nav";
+import { AppHeader } from "@/components/app-header";
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <MainNav />
