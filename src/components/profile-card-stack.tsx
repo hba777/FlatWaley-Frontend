@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useState, useMemo, useEffect } from 'react';
 import {
@@ -21,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CompatibilityExplainer } from "./compatibility-explainer";
 import { matcherApi, type MatchResult } from '@/services/matcherApi';
+import { userApi, type UserProfileData } from '@/services/userApi';
 import { useUser } from "@/context/UserContext";
 import type { UserProfile, CompatibilityAspect } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -49,11 +49,12 @@ function convertMatchToUserProfile(match: MatchResult): UserProfile {
       studyHabits: 'Library',
       socialHabits: 'Moderate',
     },
+    profile_id: match.profile_id, // Store original profile_id without slicing
   };
 }
 
 // Create compatibility aspects from match data
-function createCompatibilityAspects(match: MatchResult): CompatibilityAspect[] {
+function createCompatibilityAspects(match: MatchResult, currentUser: any, profileData?: any): CompatibilityAspect[] {
   const aspects: CompatibilityAspect[] = [];
   
   // Map reasons to compatibility aspects
@@ -61,40 +62,40 @@ function createCompatibilityAspects(match: MatchResult): CompatibilityAspect[] {
     if (reason.toLowerCase().includes('budget')) {
       aspects.push({
         aspect: 'Budget',
-        user1Value: 'Your budget',
-        user2Value: 'Similar budget',
+        user1Value: currentUser?.profileData?.budget_PKR ? `${currentUser.profileData.budget_PKR} PKR` : 'Your budget',
+        user2Value: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Similar budget',
         match: 'strong'
       });
     }
     if (reason.toLowerCase().includes('sleep')) {
       aspects.push({
         aspect: 'Sleep Schedule',
-        user1Value: 'Your schedule',
-        user2Value: 'Compatible schedule',
+        user1Value: currentUser?.profileData?.sleep_schedule || 'Your schedule',
+        user2Value: profileData?.sleep_schedule || 'Compatible schedule',
         match: 'strong'
       });
     }
     if (reason.toLowerCase().includes('cleanliness')) {
       aspects.push({
         aspect: 'Cleanliness',
-        user1Value: 'Your preference',
-        user2Value: 'Compatible preference',
+        user1Value: currentUser?.profileData?.cleanliness || 'Your preference',
+        user2Value: profileData?.cleanliness || 'Compatible preference',
         match: 'strong'
       });
     }
     if (reason.toLowerCase().includes('noise')) {
       aspects.push({
         aspect: 'Social Habits',
-        user1Value: 'Your tolerance',
-        user2Value: 'Compatible tolerance',
+        user1Value: currentUser?.profileData?.noise_tolerance || 'Your tolerance',
+        user2Value: profileData?.noise_tolerance || 'Compatible tolerance',
         match: 'strong'
       });
     }
     if (reason.toLowerCase().includes('study')) {
       aspects.push({
         aspect: 'Study Habits',
-        user1Value: 'Your habits',
-        user2Value: 'Compatible habits',
+        user1Value: currentUser?.profileData?.study_habits || 'Your habits',
+        user2Value: profileData?.study_habits || 'Compatible habits',
         match: 'strong'
       });
     }
@@ -176,6 +177,7 @@ export function ProfileCardStack() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [currentMatchProfileData, setCurrentMatchProfileData] = useState<UserProfileData | null>(null);
 
   const currentProfile = profiles[currentIndex];
   const currentMatch = matches[currentIndex];
@@ -184,6 +186,24 @@ export function ProfileCardStack() {
   useEffect(() => {
     loadMatches();
   }, []);
+
+  // Fetch profile data for current match when it changes
+  useEffect(() => {
+    if (currentMatch) {
+      const fetchCurrentMatchProfile = async () => {
+        try {
+          const profileData = await userApi.getUserProfileData(currentMatch.profile_id);
+          setCurrentMatchProfileData(profileData);
+        } catch (error) {
+          console.error('Failed to fetch profile data:', error);
+          setCurrentMatchProfileData(null);
+        }
+      };
+      fetchCurrentMatchProfile();
+    } else {
+      setCurrentMatchProfileData(null);
+    }
+  }, [currentMatch]);
 
   const loadMatches = async () => {
     try {
@@ -208,8 +228,20 @@ export function ProfileCardStack() {
     }
   };
 
-  const handleAction = (newAction: 'like' | 'dislike') => {
+  const handleAction = async (newAction: 'like' | 'dislike') => {
     setAction(newAction);
+    
+    // Always fetch the profile data for the current match to show in compatibility explainer
+    if (currentMatch) {
+      try {
+        const profileData = await userApi.getUserProfileData(currentMatch.profile_id);
+        setCurrentMatchProfileData(profileData);
+      } catch (error) {
+        console.error('Failed to fetch profile data:', error);
+        setCurrentMatchProfileData(null);
+      }
+    }
+    
     setTimeout(() => {
       setCurrentIndex((prevIndex) => prevIndex + 1);
       setAction(null);
@@ -252,9 +284,10 @@ export function ProfileCardStack() {
     return {
       user: currentProfile,
       compatibilityScore: currentMatch.score,
-      compatibilityAspects: createCompatibilityAspects(currentMatch)
+      compatibilityAspects: createCompatibilityAspects(currentMatch, currentUser, currentMatchProfileData),
+      profileData: currentMatchProfileData || undefined
     };
-  }, [currentProfile, currentMatch]);
+  }, [currentProfile, currentMatch, currentUser, currentMatchProfileData]);
 
 
   // Loading state
@@ -404,21 +437,6 @@ export function ProfileCardStack() {
         <div className="w-full max-w-md">
           <CompatibilityExplainer 
             match={matchData} 
-            currentUser={{
-              id: 1,
-              name: currentUser.username || 'You',
-              age: 22,
-              university: 'Your University',
-              bio: 'Your profile',
-              avatarUrl: '',
-              preferences: {
-                budget: 'Your budget',
-                sleepSchedule: 'Your schedule',
-                cleanliness: 'Your preference',
-                studyHabits: 'Your habits',
-                socialHabits: 'Your preference',
-              }
-            }} 
           />
         </div>
       )}

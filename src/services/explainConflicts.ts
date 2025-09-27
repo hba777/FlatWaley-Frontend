@@ -18,6 +18,7 @@ export interface ExplainConflictsRequest {
     severity: "LOW" | "MEDIUM" | "HIGH";
     type: string;
   }[];
+  match_score: number;
   access_token: string;
 }
 
@@ -50,6 +51,7 @@ class ExplainConflictsService {
         {
           pair_id: data.pair_id,
           red_flags: data.red_flags,
+          match_score: data.match_score,
         },
         {
           headers: {

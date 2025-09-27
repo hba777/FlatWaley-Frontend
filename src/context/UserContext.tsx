@@ -7,7 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { userApi, type UserResponse } from "@/services/userApi";
+import { userApi, type UserResponse, type UserProfileData } from "@/services/userApi";
 import api from "@/utils/api";
 
 interface User {
@@ -18,6 +18,7 @@ interface User {
   listing_id?: string;
   profile_id?: string;
   is_verified?: boolean;
+  profileData?: UserProfileData;
 }
 
 interface UserContextType {
@@ -34,6 +35,7 @@ interface UserContextType {
   resendVerificationEmail: (email: string) => Promise<void>;
   refreshUserData: () => Promise<void>;
   verifyEmailWithToken: (token: string, email: string) => Promise<void>;
+  fetchUserProfileData: () => Promise<void>;
   loading: boolean;
 }
 
@@ -66,6 +68,16 @@ export function UserProvider({ children }: UserProviderProps) {
       // Try to get user profile - if cookies are valid, this will work
       const userData = await userApi.getUserProfile("");
       setUser(userData);
+      
+      // Fetch profile data if profile_id exists
+      if (userData.profile_id) {
+        try {
+          const profileData = await userApi.getUserProfileData(userData.profile_id);
+          setUser(prev => prev ? { ...prev, profileData } : null);
+        } catch (error) {
+          console.error("Failed to fetch profile data:", error);
+        }
+      }
     } catch (error) {
       // No valid session found
       setUser(null);
@@ -112,6 +124,17 @@ export function UserProvider({ children }: UserProviderProps) {
       // }
 
       setUser(userData);
+      
+      // Fetch profile data if profile_id exists
+      if (userData.profile_id) {
+        try {
+          const profileData = await userApi.getUserProfileData(userData.profile_id);
+          setUser(prev => prev ? { ...prev, profileData } : null);
+        } catch (error) {
+          console.error("Failed to fetch profile data:", error);
+        }
+      }
+      
       // Cookies are automatically handled by axios
     } catch (error) {
       throw error;
@@ -220,6 +243,16 @@ export function UserProvider({ children }: UserProviderProps) {
           ...userData,
           token: result.access_token,
         });
+        
+        // Fetch profile data if profile_id exists
+        if (userData.profile_id) {
+          try {
+            const profileData = await userApi.getUserProfileData(userData.profile_id);
+            setUser(prev => prev ? { ...prev, profileData } : null);
+          } catch (error) {
+            console.error("Failed to fetch profile data:", error);
+          }
+        }
       } else {
         // If no token returned, just refresh user data
         await refreshUserData();
@@ -228,6 +261,17 @@ export function UserProvider({ children }: UserProviderProps) {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserProfileData = async () => {
+    if (!user?.profile_id) return;
+    
+    try {
+      const profileData = await userApi.getUserProfileData(user.profile_id);
+      setUser(prev => prev ? { ...prev, profileData } : null);
+    } catch (error) {
+      console.error("Failed to fetch profile data:", error);
     }
   };
 
@@ -241,6 +285,7 @@ export function UserProvider({ children }: UserProviderProps) {
     resendVerificationEmail,
     refreshUserData,
     verifyEmailWithToken,
+    fetchUserProfileData,
     loading,
   };
 

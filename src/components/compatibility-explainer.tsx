@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   CheckCircle2,
   AlertCircle,
@@ -18,12 +18,12 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Match, UserProfile } from "@/lib/types";
+import type { Match } from "@/lib/types";
 import {
   explainConflicts,
   ExplainConflictsOutput,
 } from "@/services/explainConflicts";
-import { userApi } from "@/services/userApi";
+import { useUser } from "@/context/UserContext";
 
 const iconMap = {
   strong: <CheckCircle2 className="h-5 w-5 text-green-500" />,
@@ -31,44 +31,35 @@ const iconMap = {
   conflict: <XCircle className="h-5 w-5 text-red-500" />,
 };
 
-export function CompatibilityExplainer({ match }: { match: Match }) {
+export function CompatibilityExplainer({ 
+  match 
+}: { 
+  match: Match;
+}) {
+  const { user: currentUser } = useUser();
   const [explanationData, setExplanationData] =
     useState<ExplainConflictsOutput | null>(null);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const profile = await userApi.getUserProfile();
-        setCurrentUser(profile);
-      } catch (err) {
-        console.error("Failed to get user profile:", err);
-      }
-    };
-    fetchProfile();
-  }, []);
-
   const getExplanation = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !match) return;
 
     setIsLoading(true);
     setExplanationData(null);
 
     try {
-      // Profile B is hardcoded
+      // Use the match data from profile card
       const profileB = {
-        id: "68d7cbda8196edd4fae7a2fb",
-        raw_profile_text:
-          "Hostel seat available Gulshan-e-Iqbal, Karachi. Budget no issue. Want Messy banda, prefer Late-night study, Quiet ok.",
-        city: "Karachi",
-        area: "Gulshan-e-Iqbal",
-        budget_PKR: 14000,
-        sleep_schedule: "Night owl",
-        cleanliness: "Messy",
-        noise_tolerance: "Quiet",
-        study_habits: "Late-night study",
-        food_pref: "Flexible",
+        id: match.user.profile_id || match.user.id.toString(), // Use original profile_id
+        raw_profile_text: match.profileData?.raw_profile_text || match.user.bio,
+        city: match.profileData?.city || match.user.university,
+        area: match.profileData?.area || match.user.university,
+        budget_PKR: match.profileData?.budget_PKR || 0,
+        sleep_schedule: match.profileData?.sleep_schedule || match.user.preferences.sleepSchedule,
+        cleanliness: match.profileData?.cleanliness || match.user.preferences.cleanliness,
+        noise_tolerance: match.profileData?.noise_tolerance || match.user.preferences.socialHabits,
+        study_habits: match.profileData?.study_habits || match.user.preferences.studyHabits,
+        food_pref: match.profileData?.food_pref || "Flexible",
       };
 
       const token = currentUser.token || "";
@@ -77,16 +68,32 @@ export function CompatibilityExplainer({ match }: { match: Match }) {
         pair_id: `${currentUser.profile_id || currentUser.id}_${profileB.id}`,
         red_flags: [
           {
-            evidence: `${currentUser.cleanliness} vs ${profileB.cleanliness}`,
+            evidence: `${currentUser.profileData?.cleanliness || 'Your cleanliness preference'} vs ${profileB.cleanliness}`,
             severity: "HIGH",
             type: "Cleanliness",
           },
           {
-            evidence: `${currentUser.study_habits} vs ${profileB.study_habits}`,
+            evidence: `${currentUser.profileData?.study_habits || 'Your study habits'} vs ${profileB.study_habits}`,
             severity: "MEDIUM",
             type: "Study",
           },
+          {
+            evidence: `${currentUser.profileData?.sleep_schedule || 'Your sleep schedule'} vs ${profileB.sleep_schedule}`,
+            severity: "MEDIUM",
+            type: "Sleep",
+          },
+          {
+            evidence: `${currentUser.profileData?.noise_tolerance || 'Your noise tolerance'} vs ${profileB.noise_tolerance}`,
+            severity: "MEDIUM",
+            type: "Noise",
+          },
+          {
+            evidence: `Budget: ${currentUser.profileData?.budget_PKR || 'Your budget'} PKR vs ${profileB.budget_PKR} PKR`,
+            severity: "HIGH",
+            type: "Budget",
+          },
         ],
+        match_score: match.compatibilityScore,
         access_token: token,
       });
 
