@@ -272,8 +272,8 @@ export function ProfileCardStack() {
           try {
             const result = await userApi.likeProfile(currentMatch.profile_id);
             console.log("Liked profile:", result.message);
-          } catch {
-            console.error("Failed to like profile:", err);
+          } catch (error) {
+            console.error("Failed to like:", error);
           }
         }
       } catch (error) {

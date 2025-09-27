@@ -228,6 +228,36 @@ class UserApiService {
       throw new Error(errorMessage);
     }
   }
+
+  async getLikedProfiles(): Promise<UserProfileData[]> {
+    try {
+      const response = await api.get<UserProfileData[]>(
+        "/users/liked-profiles"
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.message ||
+          "Failed to fetch liked profiles"
+      );
+    }
+  }
+
+  async unlikeProfile(profileId: string): Promise<{ message: string }> {
+    try {
+      const response = await api.post<{ message: string }>(
+        `/users/unlike-profile/${profileId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.message ||
+          "Failed to unlike profile"
+      );
+    }
+  }
 }
 
 export const userApi = new UserApiService();
