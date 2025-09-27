@@ -34,20 +34,29 @@ const iconMap = {
 };
 
 // Convert MatchResult to UserProfile for compatibility with existing UI
-function convertMatchToUserProfile(match: MatchResult, profileData?: any): UserProfile {
+function convertMatchToUserProfile(
+  match: MatchResult,
+  profileData?: any
+): UserProfile {
   return {
     id: parseInt(match.profile_id.slice(-4), 16) || Math.random() * 1000, // Convert string ID to number
-    name: profileData?.raw_profile_text ? `User from ${profileData.city}` : `User ${match.profile_id.slice(-4)}`, // Use city from profile data
+    name: profileData?.raw_profile_text
+      ? `User from ${profileData.city}`
+      : `User ${match.profile_id.slice(-4)}`, // Use city from profile data
     age: 22, // Default age
-    university: profileData?.city ? `${profileData.city} University` : 'University', // Use city from profile data
+    university: profileData?.city
+      ? `${profileData.city} University`
+      : "University", // Use city from profile data
     bio: profileData?.raw_profile_text || "Looking for a compatible roommate!",
-    avatarUrl: '', // No avatar
+    avatarUrl: "", // No avatar
     preferences: {
-      budget: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Flexible',
-      sleepSchedule: profileData?.sleep_schedule || 'Flexible',
-      cleanliness: profileData?.cleanliness || 'Average',
-      studyHabits: profileData?.study_habits || 'Library',
-      socialHabits: profileData?.noise_tolerance || 'Moderate',
+      budget: profileData?.budget_PKR
+        ? `${profileData.budget_PKR} PKR`
+        : "Flexible",
+      sleepSchedule: profileData?.sleep_schedule || "Flexible",
+      cleanliness: profileData?.cleanliness || "Average",
+      studyHabits: profileData?.study_habits || "Library",
+      socialHabits: profileData?.noise_tolerance || "Moderate",
     },
     profile_id: match.profile_id, // Store original profile_id without slicing
   };
@@ -62,39 +71,46 @@ function createCompatibilityAspects(
   // Create UserProfile objects for both users to use with calculateCompatibility
   const user1Profile: UserProfile = {
     id: 1,
-    name: 'You',
+    name: "You",
     age: 22,
-    university: 'Your University',
-    bio: 'Your profile',
-    avatarUrl: '',
+    university: "Your University",
+    bio: "Your profile",
+    avatarUrl: "",
     preferences: {
-      budget: currentUser?.profileData?.budget_PKR ? `${currentUser.profileData.budget_PKR} PKR` : 'Flexible',
-      sleepSchedule: currentUser?.profileData?.sleep_schedule || 'Flexible',
-      cleanliness: currentUser?.profileData?.cleanliness || 'Average',
-      studyHabits: currentUser?.profileData?.study_habits || 'Library',
-      socialHabits: currentUser?.profileData?.noise_tolerance || 'Moderate',
-    }
+      budget: currentUser?.profileData?.budget_PKR
+        ? `${currentUser.profileData.budget_PKR} PKR`
+        : "Flexible",
+      sleepSchedule: currentUser?.profileData?.sleep_schedule || "Flexible",
+      cleanliness: currentUser?.profileData?.cleanliness || "Average",
+      studyHabits: currentUser?.profileData?.study_habits || "Library",
+      socialHabits: currentUser?.profileData?.noise_tolerance || "Moderate",
+    },
   };
 
   const user2Profile: UserProfile = {
     id: 2,
-    name: 'Match',
+    name: "Match",
     age: 22,
-    university: 'Match University',
-    bio: 'Match profile',
-    avatarUrl: '',
+    university: "Match University",
+    bio: "Match profile",
+    avatarUrl: "",
     preferences: {
-      budget: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Flexible',
-      sleepSchedule: profileData?.sleep_schedule || 'Flexible',
-      cleanliness: profileData?.cleanliness || 'Average',
-      studyHabits: profileData?.study_habits || 'Library',
-      socialHabits: profileData?.noise_tolerance || 'Moderate',
-    }
+      budget: profileData?.budget_PKR
+        ? `${profileData.budget_PKR} PKR`
+        : "Flexible",
+      sleepSchedule: profileData?.sleep_schedule || "Flexible",
+      cleanliness: profileData?.cleanliness || "Average",
+      studyHabits: profileData?.study_habits || "Library",
+      socialHabits: profileData?.noise_tolerance || "Moderate",
+    },
   };
 
   // Use calculateCompatibility to get actual compatibility scores
-  const compatibilityResult = calculateCompatibility(user1Profile, user2Profile);
-  
+  const compatibilityResult = calculateCompatibility(
+    user1Profile,
+    user2Profile
+  );
+
   return compatibilityResult.aspects;
 }
 
@@ -106,10 +122,18 @@ function calculateCompatibility(
   let score = 100;
 
   const budget1 = parseInt(
-    user1.preferences.budget.split("-")[0].replace("$", "").replace(" PKR", "").replace("PKR", "")
+    user1.preferences.budget
+      .split("-")[0]
+      .replace("$", "")
+      .replace(" PKR", "")
+      .replace("PKR", "")
   );
   const budget2 = parseInt(
-    user2.preferences.budget.split("-")[0].replace("$", "").replace(" PKR", "").replace("PKR", "")
+    user2.preferences.budget
+      .split("-")[0]
+      .replace("$", "")
+      .replace(" PKR", "")
+      .replace("PKR", "")
   );
   const budgetDiff = Math.abs(budget1 - budget2);
 
@@ -150,12 +174,12 @@ function calculateCompatibility(
   });
 
   const cleanlinessLevels: Record<string, number> = {
-    'Tidy': 3,
-    'Messy': 1,
-    'Very Tidy': 3,
-    'Moderately Tidy': 2,
-    'Relaxed': 1,
-    'Average': 2
+    Tidy: 3,
+    Messy: 1,
+    "Very Tidy": 3,
+    "Moderately Tidy": 2,
+    Relaxed: 1,
+    Average: 2,
   };
   const cleanDiff = Math.abs(
     (cleanlinessLevels[user1.preferences.cleanliness] || 2) -
@@ -177,62 +201,68 @@ function calculateCompatibility(
   });
 
   // Study habits compatibility
-  let studyMatch: 'strong' | 'partial' | 'conflict' = 'strong';
+  let studyMatch: "strong" | "partial" | "conflict" = "strong";
   if (user1.preferences.studyHabits !== user2.preferences.studyHabits) {
     // Check for conflicting study habits
     const conflictingPairs = [
-      ['Library', 'Late-night study'],
-      ['Online classes', 'Late-night study'],
-      ['Group study', 'Quiet study']
+      ["Library", "Late-night study"],
+      ["Online classes", "Late-night study"],
+      ["Group study", "Quiet study"],
     ];
-    
-    const isConflicting = conflictingPairs.some(pair => 
-      (user1.preferences.studyHabits === pair[0] && user2.preferences.studyHabits === pair[1]) ||
-      (user1.preferences.studyHabits === pair[1] && user2.preferences.studyHabits === pair[0])
+
+    const isConflicting = conflictingPairs.some(
+      (pair) =>
+        (user1.preferences.studyHabits === pair[0] &&
+          user2.preferences.studyHabits === pair[1]) ||
+        (user1.preferences.studyHabits === pair[1] &&
+          user2.preferences.studyHabits === pair[0])
     );
-    
+
     if (isConflicting) {
       score -= 15;
-      studyMatch = 'conflict';
+      studyMatch = "conflict";
     } else {
       score -= 5;
-      studyMatch = 'partial';
+      studyMatch = "partial";
     }
   }
   aspects.push({
-    aspect: 'Study Habits',
+    aspect: "Study Habits",
     user1Value: user1.preferences.studyHabits,
     user2Value: user2.preferences.studyHabits,
-    match: studyMatch
+    match: studyMatch,
   });
 
   // Social habits (noise tolerance) compatibility
-  let socialMatch: 'strong' | 'partial' | 'conflict' = 'strong';
+  let socialMatch: "strong" | "partial" | "conflict" = "strong";
   if (user1.preferences.socialHabits !== user2.preferences.socialHabits) {
     // Check for conflicting noise tolerance
     const conflictingPairs = [
-      ['Quiet', 'Loud'],
-      ['Moderate', 'Loud']
+      ["Quiet", "Loud"],
+      ["Moderate", "Loud"],
     ];
-    
-    const isConflicting = conflictingPairs.some(pair => 
-      (user1.preferences.socialHabits === pair[0] && user2.preferences.socialHabits === pair[1]) ||
-      (user1.preferences.socialHabits === pair[1] && user2.preferences.socialHabits === pair[0])
+
+    const isConflicting = conflictingPairs.some(
+      (pair) =>
+        (user1.preferences.socialHabits === pair[0] &&
+          user2.preferences.socialHabits === pair[1]) ||
+        (user1.preferences.socialHabits === pair[1] &&
+          user2.preferences.socialHabits === pair[0])
     );
-    
+
     if (isConflicting) {
       score -= 15;
-      socialMatch = 'conflict';
+      socialMatch = "conflict";
     } else {
       score -= 5;
-      socialMatch = 'partial';
+      socialMatch = "partial";
     }
   }
   aspects.push({
-    aspect: 'Social Habits',
+    aspect: "Social Habits",
     user1Value: user1.preferences.socialHabits,
     user2Value: user2.preferences.socialHabits,
-    match: socialMatch
+    match: socialMatch,
   });
 
   return { score: Math.max(0, score), aspects };
@@ -270,12 +300,15 @@ export function ProfileCardStack() {
             currentMatch.profile_id
           );
           setCurrentMatchProfileData(profileData);
-          
+
           // Update the current profile with the fetched data
-          setProfiles(prevProfiles => {
+          setProfiles((prevProfiles) => {
             const updatedProfiles = [...prevProfiles];
             if (updatedProfiles[currentIndex]) {
-              updatedProfiles[currentIndex] = convertMatchToUserProfile(currentMatch, profileData);
+              updatedProfiles[currentIndex] = convertMatchToUserProfile(
+                currentMatch,
+                profileData
+              );
             }
             return updatedProfiles;
           });
@@ -295,7 +328,7 @@ export function ProfileCardStack() {
       setIsLoading(true);
       const newMatches = await matcherApi.getBestMatches(10);
       setMatches(newMatches);
-      setProfiles(newMatches.map(match => convertMatchToUserProfile(match)));
+      setProfiles(newMatches.map((match) => convertMatchToUserProfile(match)));
       setCurrentIndex(0);
     } catch (error) {
       console.error("Failed to load matches:", error);
@@ -456,7 +489,7 @@ export function ProfileCardStack() {
 
   return (
     <div className="w-full flex flex-col items-center gap-8">
-      <div className="relative w-full max-w-sm h-[450px]">
+      <div className="relative w-full max-w-sm min-h-[225px]">
         {profiles.map((profile, index) => {
           const status = getCardStatus(index);
           if (index < currentIndex - 1 || index > currentIndex + 2) return null;
@@ -466,14 +499,14 @@ export function ProfileCardStack() {
               key={profile.id}
               data-status={status}
               className={cn(
-                "absolute w-full h-full transition-all duration-500 ease-in-out transform-gpu cursor-grab active:cursor-grabbing",
+                "absolute w-full rounded-xl shadow-lg transition-all duration-500 ease-in-out transform-gpu cursor-grab active:cursor-grabbing bg-white dark:bg-gray-800",
                 status === "active" && "z-10",
-                status === "next" && "z-0 scale-95 -translate-y-4",
+                status === "next" && "z-0 scale-95 -translate-y-2",
                 status === "inactive" && "opacity-0",
                 status === "exiting-left" &&
-                  "-translate-x-full rotate-[-12deg] opacity-0",
+                  "-translate-x-full rotate-[-10deg] opacity-0",
                 status === "exiting-right" &&
-                  "translate-x-full rotate-[12deg] opacity-0",
+                  "translate-x-full rotate-[10deg] opacity-0",
                 status === "gone" && "hidden"
               )}
               style={
@@ -481,7 +514,7 @@ export function ProfileCardStack() {
                   ? {
                       transform: `translate(${dragOffset.x}px, ${
                         dragOffset.y
-                      }px) rotate(${dragOffset.x * 0.1}deg)`,
+                      }px) rotate(${dragOffset.x * 0.08}deg)`,
                     }
                   : undefined
               }
@@ -493,33 +526,38 @@ export function ProfileCardStack() {
               onTouchMove={status === "active" ? handleDragMove : undefined}
               onTouchEnd={status === "active" ? handleDragEnd : undefined}
             >
-              <CardContent className="p-4 h-full flex flex-col">
-                <div className="flex-1 flex flex-col">
-                  <div className="flex items-baseline gap-2">
-                    <h3 className="text-2xl font-bold">
-                      {profile.name}, {profile.age}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
+              <CardContent className="p-5 flex flex-col justify-between">
+                {/* Header */}
+                <div className="mb-2">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {profile.name}, {profile.age}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {profile.university}
                   </p>
-                  <p className="my-3 text-sm flex-1">{profile.bio}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.keys(profile.preferences).map((key) => {
-                      const prefKey = key as keyof typeof iconMap;
-                      const Icon = iconMap[prefKey];
-                      return (
-                        <Badge
-                          key={key}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          <Icon className="h-3 w-3" />
-                          {profile.preferences[prefKey]}
-                        </Badge>
-                      );
-                    })}
-                  </div>
+                </div>
+
+                {/* Bio */}
+                <p className="text-sm text-gray-700 dark:text-gray-300 flex-1 mb-3">
+                  {profile.bio}
+                </p>
+
+                {/* Preferences badges */}
+                <div className="flex flex-wrap gap-1">
+                  {Object.keys(profile.preferences).map((key) => {
+                    const prefKey = key as keyof typeof iconMap;
+                    const Icon = iconMap[prefKey];
+                    return (
+                      <Badge
+                        key={key}
+                        variant="outline"
+                        className="flex items-center gap-1 px-2 py-1 text-xs rounded-full"
+                      >
+                        <Icon className="h-3 w-3" />
+                        {profile.preferences[prefKey]}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

@@ -67,8 +67,8 @@ export default function RoomsPage() {
   return (
     <div className="flex flex-col h-screen bg-background">
       <header className="p-4 border-b">
-        <h1 className="text-3xl font-bold tracking-tight">Room Hunter</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Flat Pakro</h1>
+        <p className="text-xl italic font-serif text-muted-foreground  mb-8">
           Explore your top housing matches.
         </p>
       </header>
