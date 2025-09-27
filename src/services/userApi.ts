@@ -45,6 +45,18 @@ export interface AuthResponse {
   token_type: string;
 }
 
+export interface HousingMatch {
+  listing_id: string;
+  score: number;
+  reasons: string[];
+}
+
+export interface TopHousingMatchesRequest {
+  profileA: UserProfileData;
+  profileB: UserProfileData;
+  top_n?: number;
+}
+
 class UserApiService {
   async login(credentials: LoginRequest): Promise<UserResponse> {
     try {
@@ -256,6 +268,29 @@ class UserApiService {
           error.message ||
           "Failed to unlike profile"
       );
+    }
+  }
+
+  async findHousingMatches({
+    profileA,
+    profileB,
+    top_n = 10,
+  }: TopHousingMatchesRequest): Promise<HousingMatch[]> {
+    try {
+      const response = await api.post<HousingMatch[]>(
+        `/ai/top_housing_matches?top_n=${top_n}`,
+        {
+          profile_a: profileA,
+          profile_b: profileB,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to get housing matches";
+      throw new Error(errorMessage);
     }
   }
 }

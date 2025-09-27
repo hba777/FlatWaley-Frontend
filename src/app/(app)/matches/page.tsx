@@ -13,9 +13,10 @@ import {
   CircleDollarSign,
   Sparkles,
   Users,
+  Loader2,
 } from "lucide-react";
 import { userApi, type UserProfileData } from "@/services/userApi";
-import { cn } from "@/lib/utils";
+import { useUser } from "@/context/UserContext";
 
 const iconMap = {
   budget_PKR: CircleDollarSign,
@@ -25,9 +26,15 @@ const iconMap = {
   noise_tolerance: Users,
 };
 
+import { useRouter } from "next/navigation";
+
 export default function MatchesPage() {
+  const router = useRouter();
   const [matches, setMatches] = useState<UserProfileData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiMatches, setAiMatches] = useState<any[]>([]);
+  const [aiLoadingId, setAiLoadingId] = useState<string | null>(null);
+  const { user: currentUser } = useUser();
 
   const fetchMatches = async () => {
     try {
@@ -57,6 +64,28 @@ export default function MatchesPage() {
     }
   };
 
+  const handleFindHome = async (clickedUser: UserProfileData) => {
+    try {
+      setAiLoadingId(clickedUser.id);
+
+      if (!currentUser?.profile_id) return;
+
+      const currentUserProfile = await userApi.getUserProfileData(
+        currentUser.profile_id
+      );
+
+      // Serialize profiles to JSON strings for passing via query
+      const profileA = encodeURIComponent(JSON.stringify(currentUserProfile));
+      const profileB = encodeURIComponent(JSON.stringify(clickedUser));
+
+      router.push(`/rooms?profileA=${profileA}&profileB=${profileB}`);
+    } catch (error) {
+      console.error("Failed to find housing matches:", error);
+    } finally {
+      setAiLoadingId(null);
+    }
+  };
+
   if (loading)
     return <div className="text-center py-16">Loading matches...</div>;
 
@@ -83,7 +112,7 @@ export default function MatchesPage() {
                   {user.city}, {user.area}
                 </h3>
                 <p className="text-muted-foreground mt-1">
-                  {user.bio || "No bio available"}
+                  {user.raw_profile_text || "No bio available"}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3 justify-center">
                   {Object.keys(iconMap).map((key) => {
@@ -103,25 +132,44 @@ export default function MatchesPage() {
                     );
                   })}
                 </div>
+
+                {/* AI matches display */}
+                {aiMatches.length > 0 &&
+                  aiMatches.map((m) =>
+                    m.profile_b_id === user.id ? (
+                      <div
+                        key={m.listing_id}
+                        className="mt-4 p-3 bg-secondary rounded-lg text-sm"
+                      >
+                        <p>
+                          <strong>Score:</strong> {m.score}
+                        </p>
+                        <ul className="list-disc pl-5">
+                          {m.reasons.map((r: string, idx: number) => (
+                            <li key={idx}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null
+                  )}
               </CardContent>
-              <CardFooter className="p-4 border-t flex gap-2">
-                <Button className="flex-1" asChild>
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <Home className="h-4 w-4" />
-                    Find Home
-                  </Link>
-                </Button>
+              <CardFooter className="p-4 border-t flex justify-center gap-4">
                 <Button
-                  variant="destructive"
-                  className="flex-1 flex items-center justify-center gap-2"
-                  onClick={() => handleUnlike(user.id)}
+                  variant="ghost"
+                  className="h-6 w-6 text-white-500 cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => handleFindHome(user)}
+                  disabled={aiLoadingId === user.id}
                 >
-                  <Trash2 className="h-4 w-4" />
-                  Remove
+                  {aiLoadingId === user.id ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Home className="h-8 w-8" /> // increased icon size
+                  )}
                 </Button>
+                <Trash2
+                  className="h-6 w-6 text-red-600 cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => handleUnlike(user.id)}
+                />
               </CardFooter>
             </Card>
           ))}
