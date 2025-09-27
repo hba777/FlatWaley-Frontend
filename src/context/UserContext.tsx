@@ -106,23 +106,23 @@ export function UserProvider({ children }: UserProviderProps) {
       
       // Check if user is verified
       console.log('User verification status:', userData.is_verified, typeof userData.is_verified);
-      // if (!userData.is_verified) {
-      //   // Try to refresh user data in case verification status changed
-      //   try {
-      //     const refreshedUserData = await userApi.getUserProfile('');
-      //     console.log('Refreshed user data:', refreshedUserData);
+      if (!userData.is_verified) {
+        // Try to refresh user data in case verification status changed
+        try {
+          const refreshedUserData = await userApi.getUserProfile('');
+          console.log('Refreshed user data:', refreshedUserData);
           
-      //     if (refreshedUserData.is_verified) {
-      //       setUser(refreshedUserData);
-      //       return; // User is now verified, proceed with login
-      //     }
-      //   } catch (refreshError) {
-      //     console.log('Could not refresh user data:', refreshError);
-      //   }
+          if (refreshedUserData.is_verified) {
+            setUser(refreshedUserData);
+            return; // User is now verified, proceed with login
+          }
+        } catch (refreshError) {
+          console.log('Could not refresh user data:', refreshError);
+        }
         
-      //   // If still not verified after refresh, throw error
-      //   throw new Error('Please verify your email before signing in. Check your inbox for the verification email.');
-      // }
+        // If still not verified after refresh, throw error
+        throw new Error('Please verify your email before signing in. Check your inbox for the verification email.');
+      }
 
       setUser(userData);
       
