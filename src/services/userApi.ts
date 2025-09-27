@@ -1,7 +1,7 @@
 import api from '@/utils/api';
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -108,6 +108,16 @@ class UserApiService {
   async verifyEmail(token: string): Promise<{ message: string }> {
     try {
       const response = await api.post<{ message: string }>('/users/verify-email', { token });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Email verification failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async verifyEmailWithToken(token: string, email: string): Promise<{ message: string; access_token?: string }> {
+    try {
+      const response = await api.get<{ status: string; message: string; access_token?: string }>(`/users/verify?token=${token}&email=${email}`);
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || error.message || 'Email verification failed';

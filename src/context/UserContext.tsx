@@ -22,6 +22,8 @@ interface UserContextType {
   loginAsGuest: () => void;
   logout: () => void;
   resendVerificationEmail: (email: string) => Promise<void>;
+  refreshUserData: () => Promise<void>;
+  verifyEmailWithToken: (token: string, email: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -77,10 +79,25 @@ export function UserProvider({ children }: UserProviderProps) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const userData = await userApi.login({ username: email, password });
+      const userData = await userApi.login({ email: email, password });
+      console.log(userData);
       
       // Check if user is verified
       if (!userData.is_verified) {
+        // Try to refresh user data in case verification status changed
+        try {
+          const refreshedUserData = await userApi.getUserProfile('');
+          console.log('Refreshed user data:', refreshedUserData);
+          
+          if (refreshedUserData.is_verified) {
+            setUser(refreshedUserData);
+            return; // User is now verified, proceed with login
+          }
+        } catch (refreshError) {
+          console.log('Could not refresh user data:', refreshError);
+        }
+        
+        // If still not verified after refresh, throw error
         throw new Error('Please verify your email before signing in. Check your inbox for the verification email.');
       }
 
@@ -160,6 +177,43 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   };
 
+  const refreshUserData = async () => {
+    if (!user) return;
+    
+    try {
+      // Get fresh user data from server
+      const freshUserData = await userApi.getUserProfile('');
+      setUser(freshUserData);
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+      // If refresh fails, user might need to log in again
+      setUser(null);
+    }
+  };
+
+  const verifyEmailWithToken = async (token: string, email: string) => {
+    setLoading(true);
+    try {
+      const result = await userApi.verifyEmailWithToken(token, email);
+      
+      if (result.access_token) {
+        // If we got a new token, get the updated user data
+        const userData = await userApi.getUserProfile(result.access_token);
+        setUser({
+          ...userData,
+          token: result.access_token,
+        });
+      } else {
+        // If no token returned, just refresh user data
+        await refreshUserData();
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value: UserContextType = {
     user,
     login,
@@ -168,6 +222,8 @@ export function UserProvider({ children }: UserProviderProps) {
     loginAsGuest,
     logout,
     resendVerificationEmail,
+    refreshUserData,
+    verifyEmailWithToken,
     loading,
   };
 
