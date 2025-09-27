@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Search, Users, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
+import { AuthModal } from '@/components/auth-modal';
 
 export default function Home() {
   return (
@@ -26,12 +27,12 @@ export default function Home() {
               Discover your perfect roommate with the power of AI. Find compatible living partners and your next home, seamlessly.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="text-lg">
-                <Link href="/onboarding">
+              <AuthModal>
+                <Button size="lg" className="text-lg">
                   Find Your Match
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+                </Button>
+              </AuthModal>
             </div>
           </div>
         </section>
@@ -114,12 +115,12 @@ export default function Home() {
               Join RoomHarmony today and take the first step towards a better living experience.
             </p>
             <div className="mt-8">
-              <Button asChild size="lg" className="text-lg">
-                <Link href="/onboarding">
+              <AuthModal>
+                <Button size="lg" className="text-lg">
                   Get Started for Free
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+                </Button>
+              </AuthModal>
             </div>
           </div>
         </section>
