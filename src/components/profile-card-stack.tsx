@@ -34,20 +34,20 @@ const iconMap = {
 };
 
 // Convert MatchResult to UserProfile for compatibility with existing UI
-function convertMatchToUserProfile(match: MatchResult): UserProfile {
+function convertMatchToUserProfile(match: MatchResult, profileData?: any): UserProfile {
   return {
     id: parseInt(match.profile_id.slice(-4), 16) || Math.random() * 1000, // Convert string ID to number
-    name: `User ${match.profile_id.slice(-4)}`, // Generate a name from ID
+    name: profileData?.raw_profile_text ? `User from ${profileData.city}` : `User ${match.profile_id.slice(-4)}`, // Use city from profile data
     age: 22, // Default age
-    university: 'University', // Default university
-    bio: "Looking for a compatible roommate!",
+    university: profileData?.city ? `${profileData.city} University` : 'University', // Use city from profile data
+    bio: profileData?.raw_profile_text || "Looking for a compatible roommate!",
     avatarUrl: '', // No avatar
     preferences: {
-      budget: 'Flexible', // Default budget
-      sleepSchedule: 'Flexible',
-      cleanliness: 'Average',
-      studyHabits: 'Library',
-      socialHabits: 'Moderate',
+      budget: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Flexible',
+      sleepSchedule: profileData?.sleep_schedule || 'Flexible',
+      cleanliness: profileData?.cleanliness || 'Average',
+      studyHabits: profileData?.study_habits || 'Library',
+      socialHabits: profileData?.noise_tolerance || 'Moderate',
     },
     profile_id: match.profile_id, // Store original profile_id without slicing
   };
@@ -59,53 +59,43 @@ function createCompatibilityAspects(
   currentUser: any,
   profileData?: any
 ): CompatibilityAspect[] {
-  const aspects: CompatibilityAspect[] = [];
+  // Create UserProfile objects for both users to use with calculateCompatibility
+  const user1Profile: UserProfile = {
+    id: 1,
+    name: 'You',
+    age: 22,
+    university: 'Your University',
+    bio: 'Your profile',
+    avatarUrl: '',
+    preferences: {
+      budget: currentUser?.profileData?.budget_PKR ? `${currentUser.profileData.budget_PKR} PKR` : 'Flexible',
+      sleepSchedule: currentUser?.profileData?.sleep_schedule || 'Flexible',
+      cleanliness: currentUser?.profileData?.cleanliness || 'Average',
+      studyHabits: currentUser?.profileData?.study_habits || 'Library',
+      socialHabits: currentUser?.profileData?.noise_tolerance || 'Moderate',
+    }
+  };
+
+  const user2Profile: UserProfile = {
+    id: 2,
+    name: 'Match',
+    age: 22,
+    university: 'Match University',
+    bio: 'Match profile',
+    avatarUrl: '',
+    preferences: {
+      budget: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Flexible',
+      sleepSchedule: profileData?.sleep_schedule || 'Flexible',
+      cleanliness: profileData?.cleanliness || 'Average',
+      studyHabits: profileData?.study_habits || 'Library',
+      socialHabits: profileData?.noise_tolerance || 'Moderate',
+    }
+  };
+
+  // Use calculateCompatibility to get actual compatibility scores
+  const compatibilityResult = calculateCompatibility(user1Profile, user2Profile);
   
-  // Map reasons to compatibility aspects
-  match.reasons.forEach(reason => {
-    if (reason.toLowerCase().includes('budget')) {
-      aspects.push({
-        aspect: 'Budget',
-        user1Value: currentUser?.profileData?.budget_PKR ? `${currentUser.profileData.budget_PKR} PKR` : 'Flexible',
-        user2Value: profileData?.budget_PKR ? `${profileData.budget_PKR} PKR` : 'Flexible',
-        match: 'strong'
-      });
-    }
-    if (reason.toLowerCase().includes('sleep')) {
-      aspects.push({
-        aspect: 'Sleep Schedule',
-        user1Value: currentUser?.profileData?.sleep_schedule || 'Your schedule',
-        user2Value: profileData?.sleep_schedule || 'Compatible schedule',
-        match: 'strong'
-      });
-    }
-    if (reason.toLowerCase().includes('cleanliness')) {
-      aspects.push({
-        aspect: 'Cleanliness',
-        user1Value: currentUser?.profileData?.cleanliness || 'Your preference',
-        user2Value: profileData?.cleanliness || 'Compatible preference',
-        match: 'strong'
-      });
-    }
-    if (reason.toLowerCase().includes('noise')) {
-      aspects.push({
-        aspect: 'Social Habits',
-        user1Value: currentUser?.profileData?.noise_tolerance || 'Your tolerance',
-        user2Value: profileData?.noise_tolerance || 'Compatible tolerance',
-        match: 'strong'
-      });
-    }
-    if (reason.toLowerCase().includes('study')) {
-      aspects.push({
-        aspect: 'Study Habits',
-        user1Value: currentUser?.profileData?.study_habits || 'Your habits',
-        user2Value: profileData?.study_habits || 'Compatible habits',
-        match: 'strong'
-      });
-    }
-  });
-  
-  return aspects;
+  return compatibilityResult.aspects;
 }
 
 function calculateCompatibility(
@@ -116,10 +106,10 @@ function calculateCompatibility(
   let score = 100;
 
   const budget1 = parseInt(
-    user1.preferences.budget.split("-")[0].replace("$", "")
+    user1.preferences.budget.split("-")[0].replace("$", "").replace(" PKR", "").replace("PKR", "")
   );
   const budget2 = parseInt(
-    user2.preferences.budget.split("-")[0].replace("$", "")
+    user2.preferences.budget.split("-")[0].replace("$", "").replace(" PKR", "").replace("PKR", "")
   );
   const budgetDiff = Math.abs(budget1 - budget2);
 
@@ -160,9 +150,12 @@ function calculateCompatibility(
   });
 
   const cleanlinessLevels: Record<string, number> = {
+    'Tidy': 3,
+    'Messy': 1,
     'Very Tidy': 3,
     'Moderately Tidy': 2,
-    'Relaxed': 1
+    'Relaxed': 1,
+    'Average': 2
   };
   const cleanDiff = Math.abs(
     (cleanlinessLevels[user1.preferences.cleanliness] || 2) -
@@ -181,6 +174,65 @@ function calculateCompatibility(
     user1Value: user1.preferences.cleanliness,
     user2Value: user2.preferences.cleanliness,
     match: cleanMatch
+  });
+
+  // Study habits compatibility
+  let studyMatch: 'strong' | 'partial' | 'conflict' = 'strong';
+  if (user1.preferences.studyHabits !== user2.preferences.studyHabits) {
+    // Check for conflicting study habits
+    const conflictingPairs = [
+      ['Library', 'Late-night study'],
+      ['Online classes', 'Late-night study'],
+      ['Group study', 'Quiet study']
+    ];
+    
+    const isConflicting = conflictingPairs.some(pair => 
+      (user1.preferences.studyHabits === pair[0] && user2.preferences.studyHabits === pair[1]) ||
+      (user1.preferences.studyHabits === pair[1] && user2.preferences.studyHabits === pair[0])
+    );
+    
+    if (isConflicting) {
+      score -= 15;
+      studyMatch = 'conflict';
+    } else {
+      score -= 5;
+      studyMatch = 'partial';
+    }
+  }
+  aspects.push({
+    aspect: 'Study Habits',
+    user1Value: user1.preferences.studyHabits,
+    user2Value: user2.preferences.studyHabits,
+    match: studyMatch
+  });
+
+  // Social habits (noise tolerance) compatibility
+  let socialMatch: 'strong' | 'partial' | 'conflict' = 'strong';
+  if (user1.preferences.socialHabits !== user2.preferences.socialHabits) {
+    // Check for conflicting noise tolerance
+    const conflictingPairs = [
+      ['Quiet', 'Loud'],
+      ['Moderate', 'Loud']
+    ];
+    
+    const isConflicting = conflictingPairs.some(pair => 
+      (user1.preferences.socialHabits === pair[0] && user2.preferences.socialHabits === pair[1]) ||
+      (user1.preferences.socialHabits === pair[1] && user2.preferences.socialHabits === pair[0])
+    );
+    
+    if (isConflicting) {
+      score -= 15;
+      socialMatch = 'conflict';
+    } else {
+      score -= 5;
+      socialMatch = 'partial';
+    }
+  }
+  aspects.push({
+    aspect: 'Social Habits',
+    user1Value: user1.preferences.socialHabits,
+    user2Value: user2.preferences.socialHabits,
+    match: socialMatch
   });
 
   return { score: Math.max(0, score), aspects };
@@ -213,6 +265,15 @@ export function ProfileCardStack() {
         try {
           const profileData = await userApi.getUserProfileData(currentMatch.profile_id);
           setCurrentMatchProfileData(profileData);
+          
+          // Update the current profile with the fetched data
+          setProfiles(prevProfiles => {
+            const updatedProfiles = [...prevProfiles];
+            if (updatedProfiles[currentIndex]) {
+              updatedProfiles[currentIndex] = convertMatchToUserProfile(currentMatch, profileData);
+            }
+            return updatedProfiles;
+          });
         } catch (error) {
           console.error('Failed to fetch profile data:', error);
           setCurrentMatchProfileData(null);
@@ -222,14 +283,14 @@ export function ProfileCardStack() {
     } else {
       setCurrentMatchProfileData(null);
     }
-  }, [currentMatch]);
+  }, [currentMatch, currentIndex]);
 
   const loadMatches = async () => {
     try {
       setIsLoading(true);
       const newMatches = await matcherApi.getBestMatches(10);
       setMatches(newMatches);
-      setProfiles(newMatches.map(convertMatchToUserProfile));
+      setProfiles(newMatches.map(match => convertMatchToUserProfile(match)));
       setCurrentIndex(0);
     } catch (error) {
       console.error('Failed to load matches:', error);
