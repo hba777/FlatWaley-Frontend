@@ -146,16 +146,12 @@ function AuthForm({
   }, [signInWithGoogle]);
 
   const handleAuthSuccess = useCallback(
-    () => {
+    async () => {
       onAuthenticated?.('');
-      // Check if user has a profile to determine redirect
-      if (user?.profile_id) {
-        router.push('/dashboard');
-      } else {
-        router.push('/onboarding');
-      }
+      // Always redirect to onboarding first - the onboarding page will check if profile exists
+      router.push('/onboarding');
     },
-    [onAuthenticated, router, user]
+    [onAuthenticated, router]
   );
 
   const onSubmit = async (values: any) => {

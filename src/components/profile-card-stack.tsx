@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import Image from 'next/image';
+import { useState, useMemo, useEffect } from 'react';
 import {
   BedDouble,
   BookOpen,
@@ -10,6 +9,8 @@ import {
   Users,
   X,
   Heart,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { CompatibilityExplainer } from './compatibility-explainer';
-import { potentialMatches, currentUser } from '@/lib/data';
+import { matcherApi, type MatchResult } from '@/services/matcherApi';
+import { useUser } from '@/context/UserContext';
 import type { UserProfile, CompatibilityAspect } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +30,76 @@ const iconMap = {
   studyHabits: BookOpen,
   socialHabits: Users,
 };
+
+// Convert MatchResult to UserProfile for compatibility with existing UI
+function convertMatchToUserProfile(match: MatchResult): UserProfile {
+  return {
+    id: parseInt(match.profile_id.slice(-4), 16) || Math.random() * 1000, // Convert string ID to number
+    name: `User ${match.profile_id.slice(-4)}`, // Generate a name from ID
+    age: 22, // Default age
+    university: 'University', // Default university
+    bio: "Looking for a compatible roommate!",
+    avatarUrl: '', // No avatar
+    preferences: {
+      budget: 'Flexible', // Default budget
+      sleepSchedule: 'Flexible',
+      cleanliness: 'Average',
+      studyHabits: 'Library',
+      socialHabits: 'Moderate',
+    },
+  };
+}
+
+// Create compatibility aspects from match data
+function createCompatibilityAspects(match: MatchResult): CompatibilityAspect[] {
+  const aspects: CompatibilityAspect[] = [];
+  
+  // Map reasons to compatibility aspects
+  match.reasons.forEach(reason => {
+    if (reason.toLowerCase().includes('budget')) {
+      aspects.push({
+        aspect: 'Budget',
+        user1Value: 'Your budget',
+        user2Value: 'Similar budget',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('sleep')) {
+      aspects.push({
+        aspect: 'Sleep Schedule',
+        user1Value: 'Your schedule',
+        user2Value: 'Compatible schedule',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('cleanliness')) {
+      aspects.push({
+        aspect: 'Cleanliness',
+        user1Value: 'Your preference',
+        user2Value: 'Compatible preference',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('noise')) {
+      aspects.push({
+        aspect: 'Social Habits',
+        user1Value: 'Your tolerance',
+        user2Value: 'Compatible tolerance',
+        match: 'strong'
+      });
+    }
+    if (reason.toLowerCase().includes('study')) {
+      aspects.push({
+        aspect: 'Study Habits',
+        user1Value: 'Your habits',
+        user2Value: 'Compatible habits',
+        match: 'strong'
+      });
+    }
+  });
+  
+  return aspects;
+}
 
 function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score: number, aspects: CompatibilityAspect[] } {
     const aspects: CompatibilityAspect[] = [];
@@ -57,8 +129,8 @@ function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score
     }
      aspects.push({ aspect: 'Sleep Schedule', user1Value: user1.preferences.sleepSchedule, user2Value: user2.preferences.sleepSchedule, match: sleepMatch });
 
-    const cleanlinessLevels = {'Very Tidy': 3, 'Moderately Tidy': 2, 'Relaxed': 1};
-    const cleanDiff = Math.abs(cleanlinessLevels[user1.preferences.cleanliness] - cleanlinessLevels[user2.preferences.cleanliness]);
+    const cleanlinessLevels: Record<string, number> = {'Very Tidy': 3, 'Moderately Tidy': 2, 'Relaxed': 1};
+    const cleanDiff = Math.abs((cleanlinessLevels[user1.preferences.cleanliness] || 2) - (cleanlinessLevels[user2.preferences.cleanliness] || 2));
     let cleanMatch: 'strong' | 'partial' | 'conflict' = 'strong';
     if (cleanDiff > 1) {
         score -= 25;
@@ -74,36 +146,140 @@ function calculateCompatibility(user1: UserProfile, user2: UserProfile): { score
 
 
 export function ProfileCardStack() {
-  const [profiles, setProfiles] = useState(potentialMatches);
+  const { user: currentUser } = useUser();
+  const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [action, setAction] = useState<'like' | 'dislike' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const currentProfile = profiles[currentIndex];
+  const currentMatch = matches[currentIndex];
+
+  // Load matches on component mount
+  useEffect(() => {
+    loadMatches();
+  }, []);
+
+  const loadMatches = async () => {
+    try {
+      setIsLoading(true);
+      const newMatches = await matcherApi.getBestMatches(10);
+      setMatches(newMatches);
+      setProfiles(newMatches.map(convertMatchToUserProfile));
+      setCurrentIndex(0);
+    } catch (error) {
+      console.error('Failed to load matches:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await loadMatches();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleAction = (newAction: 'like' | 'dislike') => {
     setAction(newAction);
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % profiles.length);
+      setCurrentIndex((prevIndex) => prevIndex + 1);
       setAction(null);
-    }, 500); // match animation duration
+      setDragOffset({ x: 0, y: 0 });
+    }, 500);
+  };
+
+  // Drag handlers for swipe functionality
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX, y: clientY });
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!dragStart) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const deltaX = clientX - dragStart.x;
+    const deltaY = Math.abs(deltaX) > 50 ? 0 : (clientX - dragStart.x) * 0.1; // Slight vertical movement
+    
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleDragEnd = () => {
+    if (!dragStart) return;
+    
+    const threshold = 100;
+    if (Math.abs(dragOffset.x) > threshold) {
+      handleAction(dragOffset.x > 0 ? 'like' : 'dislike');
+    } else {
+      setDragOffset({ x: 0, y: 0 });
+    }
+    setDragStart(null);
   };
   
   const matchData = useMemo(() => {
-      if (!currentProfile) return null;
-      const {score, aspects} = calculateCompatibility(currentUser, currentProfile);
-      return {
-          user: currentProfile,
-          compatibilityScore: score,
-          compatibilityAspects: aspects
-      };
-  }, [currentProfile]);
+    if (!currentProfile || !currentMatch) return null;
+    
+    return {
+      user: currentProfile,
+      compatibilityScore: currentMatch.score,
+      compatibilityAspects: createCompatibilityAspects(currentMatch)
+    };
+  }, [currentProfile, currentMatch]);
 
 
-  if (!currentProfile || !matchData) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="text-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold">Finding your matches...</h2>
+        <p className="text-muted-foreground mt-2">We're analyzing profiles to find the best roommates for you!</p>
+      </div>
+    );
+  }
+
+  // Empty state - no more profiles
+  if (currentIndex >= profiles.length) {
     return (
       <div className="text-center p-8">
         <h2 className="text-2xl font-semibold">No more profiles</h2>
-        <p className="text-muted-foreground mt-2">Check back later for new potential roommates!</p>
+        <p className="text-muted-foreground mt-2 mb-6">You've seen all available matches! Check back later for new potential roommates.</p>
+        <Button 
+          onClick={handleRefresh} 
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          {isRefreshing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Finding more matches...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4" />
+              Find More Matches
+            </>
+          )}
+        </Button>
+      </div>
+    );
+  }
+
+  // No current profile or match data
+  if (!currentProfile || !matchData) {
+    return (
+      <div className="text-center p-8">
+        <h2 className="text-2xl font-semibold">No profiles available</h2>
+        <p className="text-muted-foreground mt-2">Unable to load matches at the moment.</p>
       </div>
     );
   }
@@ -131,7 +307,7 @@ export function ProfileCardStack() {
               key={profile.id}
               data-status={status}
               className={cn(
-                "absolute w-full h-full transition-all duration-500 ease-in-out transform-gpu",
+                "absolute w-full h-full transition-all duration-500 ease-in-out transform-gpu cursor-grab active:cursor-grabbing",
                 status === 'active' && 'z-10',
                 status === 'next' && 'z-0 scale-95 -translate-y-4',
                 status === 'inactive' && 'opacity-0',
@@ -139,17 +315,18 @@ export function ProfileCardStack() {
                 status === 'exiting-right' && 'translate-x-full rotate-[12deg] opacity-0',
                 status === 'gone' && 'hidden'
               )}
+              style={status === 'active' ? {
+                transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x * 0.1}deg)`
+              } : undefined}
+              onMouseDown={status === 'active' ? handleDragStart : undefined}
+              onMouseMove={status === 'active' ? handleDragMove : undefined}
+              onMouseUp={status === 'active' ? handleDragEnd : undefined}
+              onMouseLeave={status === 'active' ? handleDragEnd : undefined}
+              onTouchStart={status === 'active' ? handleDragStart : undefined}
+              onTouchMove={status === 'active' ? handleDragMove : undefined}
+              onTouchEnd={status === 'active' ? handleDragEnd : undefined}
             >
               <CardContent className="p-4 h-full flex flex-col">
-                <div className="relative h-1/2 w-full mb-4">
-                  <Image
-                    src={profile.avatarUrl}
-                    alt={profile.name}
-                    fill
-                    className="rounded-lg object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
                 <div className="flex-1 flex flex-col">
                    <div className="flex items-baseline gap-2">
                         <h3 className="text-2xl font-bold">{profile.name}, {profile.age}</h3>
@@ -184,9 +361,28 @@ export function ProfileCardStack() {
         </Button>
       </div>
 
-      <div className="w-full max-w-md">
-        <CompatibilityExplainer match={matchData} currentUser={currentUser} />
-      </div>
+      {matchData && currentUser && (
+        <div className="w-full max-w-md">
+          <CompatibilityExplainer 
+            match={matchData} 
+            currentUser={{
+              id: 1,
+              name: currentUser.username || 'You',
+              age: 22,
+              university: 'Your University',
+              bio: 'Your profile',
+              avatarUrl: '',
+              preferences: {
+                budget: 'Your budget',
+                sleepSchedule: 'Your schedule',
+                cleanliness: 'Your preference',
+                studyHabits: 'Your habits',
+                socialHabits: 'Your preference',
+              }
+            }} 
+          />
+        </div>
+      )}
 
     </div>
   );
