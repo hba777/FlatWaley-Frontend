@@ -1,0 +1,129 @@
+import api from '@/utils/api';
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  listing_id?: string;
+  profile_id?: string;
+}
+
+export interface GoogleAuthRequest {
+  id_token: string;
+}
+
+export interface UserResponse {
+  id: string;
+  username: string;
+  email?: string;
+  token?: string;
+  listing_id?: string;
+  profile_id?: string;
+  is_verified?: boolean;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+}
+
+class UserApiService {
+
+  async login(credentials: LoginRequest): Promise<UserResponse> {
+    try {
+      const response = await api.post<AuthResponse>('/users/login', credentials);
+
+      // After successful login, get user details
+      const userDetails = await this.getUserProfile(response.data.access_token);
+      
+      return {
+        ...userDetails,
+        token: response.data.access_token,
+      };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Login failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async register(userData: RegisterRequest): Promise<UserResponse> {
+    try {
+      const response = await api.post<UserResponse>('/users/register', userData);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async googleAuth(googleData: GoogleAuthRequest): Promise<AuthResponse> {
+    try {
+      const response = await api.post<AuthResponse>('/users/google', googleData);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Google authentication failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async getUserProfile(token: string): Promise<UserResponse> {
+    try {
+      const response = await api.get<UserResponse>('/users/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to get user profile';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async verifyToken(token: string): Promise<UserResponse> {
+    try {
+      const response = await api.post<UserResponse>('/users/verify-token', { token });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Token verification failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async resendVerificationEmail(email: string): Promise<{ message: string }> {
+    try {
+      const response = await api.post<{ message: string }>('/users/resend-verification', { email });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to resend verification email';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    try {
+      const response = await api.post<{ message: string }>('/users/verify-email', { token });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Email verification failed';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async logout(): Promise<{ message: string }> {
+    try {
+      const response = await api.post<{ message: string }>('/users/logout');
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Logout failed';
+      throw new Error(errorMessage);
+    }
+  }
+}
+
+export const userApi = new UserApiService();

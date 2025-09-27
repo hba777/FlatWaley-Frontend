@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -94,10 +95,13 @@ function AuthForm({
   onAuthenticated?: (token: string) => void;
 }) {
   const router = useRouter();
-  const { login, register, signInWithGoogle, loginAsGuest } = useUser();
+  const { login, register, signInWithGoogle, loginAsGuest, resendVerificationEmail } = useUser();
+  const { toast } = useToast();
   const isSignUp = view === 'signup';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string>('');
 
   const form = useForm({
     resolver: zodResolver(isSignUp ? signUpSchema : signInSchema),
@@ -121,7 +125,7 @@ function AuthForm({
                   setLoading(true);
                   setError(null);
                   await signInWithGoogle(response.credential);
-                  handleAuthSuccess(localStorage.getItem("auth_token") || "");
+                  handleAuthSuccess();
                 } catch (err: any) {
                   setError(err.message || "Google sign-in failed");
                 } finally {
@@ -142,8 +146,8 @@ function AuthForm({
   }, [signInWithGoogle]);
 
   const handleAuthSuccess = useCallback(
-    (token: string) => {
-      onAuthenticated?.(token);
+    () => {
+      onAuthenticated?.('');
       router.push('/onboarding');
     },
     [onAuthenticated, router]
@@ -155,11 +159,22 @@ function AuthForm({
     
     try {
       if (isSignUp) {
-        await register(values.username, values.email, values.password);
+        const result = await register(values.username, values.email, values.password);
+        
+        // Show verification message and switch to sign in
+        setShowVerificationMessage(true);
+        setRegisteredEmail(values.email);
+        onViewChange('signin');
+        
+        toast({
+          title: "Verification Email Sent",
+          description: result.message,
+          duration: 5000,
+        });
       } else {
         await login(values.email, values.password);
+        handleAuthSuccess();
       }
-      handleAuthSuccess(localStorage.getItem("auth_token") || "");
     } catch (err: any) {
       setError(err.message || "Authentication failed");
     } finally {
@@ -222,7 +237,7 @@ function AuthForm({
       setLoading(true);
       setError(null);
       loginAsGuest();
-      handleAuthSuccess(localStorage.getItem("auth_token") || "");
+      handleAuthSuccess();
     } catch (err: any) {
       setError(err.message || "Guest login failed");
     } finally {
@@ -230,11 +245,48 @@ function AuthForm({
     }
   }, [loginAsGuest, handleAuthSuccess]);
 
+  const handleResendVerification = useCallback(async () => {
+    if (!registeredEmail) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      await resendVerificationEmail(registeredEmail);
+      
+      toast({
+        title: "Verification Email Resent",
+        description: "Please check your inbox for the verification email.",
+        duration: 5000,
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to resend verification email");
+    } finally {
+      setLoading(false);
+    }
+  }, [registeredEmail, resendVerificationEmail, toast]);
+
   return (
     <Form {...form}>
       {error && (
         <div className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">
           {error}
+        </div>
+      )}
+      
+      {showVerificationMessage && !isSignUp && (
+        <div className="text-green-600 text-sm bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-4">
+          <p className="font-medium">Verification email sent!</p>
+          <p className="text-xs mt-1">Please check your inbox and verify your email before signing in.</p>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="p-0 h-auto text-green-600 hover:text-green-700 mt-2"
+            onClick={handleResendVerification}
+            disabled={loading}
+          >
+            Resend verification email
+          </Button>
         </div>
       )}
       
@@ -315,14 +367,32 @@ function AuthForm({
         {isSignUp ? (
           <>
             Already have an account?{' '}
-            <Button variant="link" className="p-0 h-auto" onClick={() => onViewChange('signin')} disabled={loading}>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto" 
+              onClick={() => {
+                onViewChange('signin');
+                setShowVerificationMessage(false);
+                setError(null);
+              }} 
+              disabled={loading}
+            >
               Sign in
             </Button>
           </>
         ) : (
           <>
             Don't have an account?{' '}
-            <Button variant="link" className="p-0 h-auto" onClick={() => onViewChange('signup')} disabled={loading}>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto" 
+              onClick={() => {
+                onViewChange('signup');
+                setShowVerificationMessage(false);
+                setError(null);
+              }} 
+              disabled={loading}
+            >
               Create an account
             </Button>
           </>
