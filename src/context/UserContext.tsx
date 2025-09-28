@@ -8,6 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import { userApi, type UserResponse, type UserProfileData } from "@/services/userApi";
+import { parseApi, type ProfileCreateRequest } from "@/services/parseApi";
 import api from "@/utils/api";
 
 interface User {
@@ -36,6 +37,7 @@ interface UserContextType {
   refreshUserData: () => Promise<void>;
   verifyEmailWithToken: (token: string, email: string) => Promise<void>;
   fetchUserProfileData: () => Promise<void>;
+  createUserProfile: (profileData: ProfileCreateRequest) => Promise<void>;
   loading: boolean;
 }
 
@@ -286,6 +288,29 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   };
 
+  const createUserProfile = async (profileData: ProfileCreateRequest) => {
+    if (!user) {
+      throw new Error("User must be logged in to create a profile");
+    }
+    
+    try {
+      // Create the profile using parseApi
+      const createdProfile = await parseApi.createProfile(profileData);
+      
+      // Update user context with the new profile_id and profile data
+      setUser(prev => prev ? { 
+        ...prev, 
+        profile_id: createdProfile.id,
+        profileData: createdProfile
+      } : null);
+      
+      console.log("Profile created successfully:", createdProfile);
+    } catch (error) {
+      console.error("Failed to create profile:", error);
+      throw error;
+    }
+  };
+
   const value: UserContextType = {
     user,
     login,
@@ -297,6 +322,7 @@ export function UserProvider({ children }: UserProviderProps) {
     refreshUserData,
     verifyEmailWithToken,
     fetchUserProfileData,
+    createUserProfile,
     loading,
   };
 
