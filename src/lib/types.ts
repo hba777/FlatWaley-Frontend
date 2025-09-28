@@ -17,7 +17,7 @@ export type UserPreferences = {
 export type UserProfile = {
   id: number;
   name: string;
-  age: number;
+  age?: number;
   university: string;
   avatarUrl: string;
   preferences: UserPreferences;
