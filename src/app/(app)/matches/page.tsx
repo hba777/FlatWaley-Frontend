@@ -105,7 +105,7 @@ export default function MatchesPage() {
             >
               <CardContent className="p-6 flex-1 flex flex-col items-center text-center">
                 <Avatar className="w-28 h-28 mb-4">
-                  <AvatarImage src={user.avatarUrl || ""} alt={user.city} />
+                  <AvatarImage src="" alt={user.city} />
                   <AvatarFallback>{user.city?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <h3 className="text-xl font-bold">
@@ -117,7 +117,7 @@ export default function MatchesPage() {
                 <div className="flex flex-wrap gap-2 mt-3 justify-center">
                   {Object.keys(iconMap).map((key) => {
                     const Icon = iconMap[key as keyof typeof iconMap];
-                    const value = (user as any)[key] || "N/A";
+                    const value = user[key as keyof UserProfileData] || "N/A";
                     return (
                       <Button
                         key={key}
