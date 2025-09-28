@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { RoomListing } from "@/lib/types";
+import { HousingMatch } from "@/services/userApi";
 
 interface InteractiveMapProps {
-  listing: RoomListing & { latitude?: number; longitude?: number };
+  listing: HousingMatch;
   className?: string;
 }
 

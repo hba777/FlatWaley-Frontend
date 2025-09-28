@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, BedDouble, DollarSign } from "lucide-react";
 import { userApi, type UserProfileData } from "@/services/userApi";
-import { HousingMatch } from "@/lib/types";
+import { HousingMatch } from "@/services/userApi";
 
 export default function RoomsPage() {
   const searchParams = useSearchParams();
@@ -56,10 +56,23 @@ export default function RoomsPage() {
   }, [searchParams]);
 
   const handleViewDetails = (listing: HousingMatch) => {
-    // Serialize the entire listing object
-    console.log("Sending listing data:", listing);
-    const serialized = encodeURIComponent(JSON.stringify(listing));
-    router.push(`/rooms/details?listing=${serialized}`);
+    // Get profile data from URL params
+    const profileAParam = searchParams.get("profileA");
+    const profileBParam = searchParams.get("profileB");
+    
+    const profileA: UserProfileData = profileAParam ? JSON.parse(decodeURIComponent(profileAParam)) : null;
+    const profileB: UserProfileData = profileBParam ? JSON.parse(decodeURIComponent(profileBParam)) : null;
+    
+    // Create combined data object
+    const combinedData = {
+      listing,
+      profileA,
+      profileB
+    };
+    
+    console.log("Sending combined data:", combinedData);
+    const serialized = encodeURIComponent(JSON.stringify(combinedData));
+    router.push(`/rooms/details?data=${serialized}`);
   };
 
   if (loading) return <div className="text-center py-16">Loading rooms...</div>;
@@ -103,7 +116,7 @@ export default function RoomsPage() {
                     {match.rooms_available} room(s)
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {match.amenities.map((amenity) => (
+                    {match.amenities.map((amenity: string) => (
                       <Badge key={amenity} variant="secondary">
                         {amenity}
                       </Badge>

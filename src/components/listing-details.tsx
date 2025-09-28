@@ -17,25 +17,52 @@ import {
   Heart,
   Share2,
 } from "lucide-react";
-import { RoomListing } from "@/lib/types";
 import { InteractiveMap } from "./interactive-map";
+import { UserProfileData, HousingMatch } from "@/services/userApi";
 
 interface ListingDetailsProps {
-  listing: RoomListing;
+  listing: HousingMatch;
+  profileA?: UserProfileData | null;
+  profileB?: UserProfileData | null;
 }
 
-export function ListingDetails({ listing }: ListingDetailsProps) {
+export function ListingDetails({ listing, profileA, profileB }: ListingDetailsProps) {
   const router = useRouter();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleBack = () => router.back();
-  const handleContact = () => console.log("Contact landlord:", listing.id);
+  const handleWhatsApp = () => {
+    // Create detailed message with match and listing information
+    let message = "Hi — I'm interested in this room.\n\n";
+    
+    // Add listing details
+    message += `🏠 *Property Details:*\n`;
+    message += `📍 Location: ${listing.city}, ${listing.area}\n`;
+    message += `💰 Rent: ${listing.monthly_rent_PKR.toLocaleString()} PKR/month\n`;
+    message += `🛏️ Rooms Available: ${listing.rooms_available}\n`;
+    message += `✅ Amenities: ${listing.amenities.join(', ')}\n\n`;
+    
+    // Add match details if available
+    if (profileA && profileB) {
+      message += `👥 *Roommate Match Details:*\n`;
+      message += `👤 Profile A: ${profileA.city}, ${profileA.area} (Budget: ${profileA.budget_PKR.toLocaleString()} PKR)\n`;
+      message += `👤 Profile B: ${profileB.city}, ${profileB.area} (Budget: ${profileB.budget_PKR.toLocaleString()} PKR)\n`;
+      
+      if (profileA.sleep_schedule) message += `🌙 Sleep Schedule: ${profileA.sleep_schedule}\n`;
+      if (profileA.cleanliness) message += `🧹 Cleanliness: ${profileA.cleanliness}\n`;
+      if (profileA.study_habits) message += `📚 Study Habits: ${profileA.study_habits}\n`;
+      if (profileA.food_pref) message += `🍽️ Food Preference: ${profileA.food_pref}\n`;
+    }
+    
+    const encodedMsg = encodeURIComponent(message);
+    window.open(`https://wa.me/923345098296?text=${encodedMsg}`, '_blank');
+  };
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: listing.title,
-        text: listing.description,
+        title: `${listing.city}, ${listing.area}`,
+        text: `Room in ${listing.city}, ${listing.area} - ${listing.monthly_rent_PKR.toLocaleString()} PKR/month`,
         url: window.location.href,
       });
     } else {
@@ -48,34 +75,6 @@ export function ListingDetails({ listing }: ListingDetailsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6 order-1">
-          {/* Image Gallery */}
-          {listing.images?.length > 0 && (
-            <Card>
-              <CardContent className="p-0 relative h-96">
-                <Image
-                  src={listing.images[selectedImageIndex]}
-                  alt={listing.title}
-                  fill
-                  className="object-cover rounded-t-lg"
-                />
-                {listing.images.length > 1 && (
-                  <div className="absolute bottom-4 left-4 flex space-x-2">
-                    {listing.images.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImageIndex(idx)}
-                        className={`w-3 h-3 rounded-full ${
-                          selectedImageIndex === idx
-                            ? "bg-white"
-                            : "bg-white/50"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Property Details */}
           <Card>
@@ -136,13 +135,13 @@ export function ListingDetails({ listing }: ListingDetailsProps) {
               <CardTitle>Contact Landlord</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" onClick={handleContact}>
+              <Button className="w-full" onClick={handleWhatsApp}>
                 <Phone className="h-4 w-4 mr-2" />
-                Call Now
+                WhatsApp Call
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleWhatsApp}>
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Send Message
+                WhatsApp Message
               </Button>
             </CardContent>
           </Card>
