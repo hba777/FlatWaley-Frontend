@@ -77,6 +77,25 @@ class ParseApiService {
       throw new Error(errorMessage);
     }
   }
+
+  async updateProfile(
+    profileId: string,
+    profileData: Partial<ProfileCreateRequest>
+  ): Promise<{ detail: string }> {
+    try {
+      const response = await api.patch<{ detail: string }>(
+        `/profiles/${profileId}`,
+        profileData
+      );
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "Profile update failed";
+      throw new Error(errorMessage);
+    }
+  }
 }
 
 export const parseApi = new ParseApiService();
