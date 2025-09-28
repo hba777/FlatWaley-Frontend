@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { parseApi, type ParseProfileResponse } from "@/services/parseApi";
+import { useUser } from "@/context/UserContext";
 
 type OnboardingStep = 'text' | 'review' | 'success';
 
@@ -38,6 +39,7 @@ const categoryOptions = {
 
 export function OnboardingQuiz() {
   const router = useRouter();
+  const { createUserProfile } = useUser();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('text');
   const [profileText, setProfileText] = useState('');
   const [parsedProfile, setParsedProfile] = useState<ParseProfileResponse | null>(null);
@@ -69,7 +71,8 @@ export function OnboardingQuiz() {
     
     setIsCreating(true);
     try {
-      await parseApi.createProfile(selectedProfile as ParseProfileResponse);
+      // Use the UserContext's createUserProfile function
+      await createUserProfile(selectedProfile as ParseProfileResponse);
       setCurrentStep('success');
       setTimeout(() => {
         router.push('/dashboard');
