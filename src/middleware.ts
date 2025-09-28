@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/verify-email') || 
     pathname.startsWith('/static') ||
     pathname === '/favicon.ico' ||
     // Allow all files with an extension (e.g., .jpg, .png, .css, .js, etc.)

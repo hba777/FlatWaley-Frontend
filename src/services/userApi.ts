@@ -46,9 +46,18 @@ export interface AuthResponse {
 }
 
 export interface HousingMatch {
-  listing_id: string;
-  score: number;
-  reasons: string[];
+  id?: string;
+  listing_id?: string;
+  city: string;
+  area: string;
+  monthly_rent_PKR: number;
+  rooms_available: number;
+  availability: string;
+  amenities: string[];
+  latitude?: number;
+  longitude?: number;
+  score?: number;
+  reasons?: string[];
 }
 
 export interface TopHousingMatchesRequest {
