@@ -90,7 +90,6 @@ function createCompatibilityAspects(
   const user2Profile: UserProfile = {
     id: 2,
     name: "Match",
-    age: 22,
     university: "Match University",
     bio: "Match profile",
     avatarUrl: "",
@@ -570,7 +569,7 @@ export function ProfileCardStack() {
                 {/* Header */}
                 <div className="mb-2">
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {profile.name}, {profile.age}
+                    {profile.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {profile.university}
