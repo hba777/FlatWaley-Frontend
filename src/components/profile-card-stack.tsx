@@ -326,9 +326,48 @@ export function ProfileCardStack() {
   const loadMatches = async () => {
     try {
       setIsLoading(true);
-      const newMatches = await matcherApi.getBestMatches(10);
-      setMatches(newMatches);
-      setProfiles(newMatches.map((match) => convertMatchToUserProfile(match)));
+  
+      // Fetch both matches and liked profiles in parallel
+      const [newMatches, likedProfiles] = await Promise.all([
+        matcherApi.getBestMatches(10),
+        userApi.getLikedProfiles()
+      ]);
+  
+      // likedProfiles is already an array of profile ID strings
+      const likedIds: string[] = likedProfiles.filter(Boolean);
+      console.log("Liked profile IDs:", likedIds);
+  
+      // Fetch profile data for each match and filter out liked ones
+      const filteredMatches = [];
+      
+      for (const match of newMatches) {
+        try {
+          // Skip if no profile_id
+          if (!match.profile_id) {
+            filteredMatches.push(match);
+            continue;
+          }
+          
+          // Fetch the actual profile data for this match
+          const profileData = await userApi.getUserProfileData(match.profile_id);
+          
+          // Check if this profile's ID is in the liked list
+          if (!likedIds.includes(profileData.id)) {
+            filteredMatches.push(match);
+          } else {
+            console.log("Filtering out liked profile:", profileData.id);
+          }
+        } catch (error) {
+          console.error("Failed to fetch profile data for match:", match.profile_id, error);
+          // If we can't fetch profile data, include the match anyway
+          filteredMatches.push(match);
+        }
+      }
+  
+      console.log("Original matches:", newMatches.length, "Filtered matches:", filteredMatches.length);
+  
+      setMatches(filteredMatches);
+      setProfiles(filteredMatches.map((match) => convertMatchToUserProfile(match)));
       setCurrentIndex(0);
     } catch (error) {
       console.error("Failed to load matches:", error);
@@ -336,6 +375,7 @@ export function ProfileCardStack() {
       setIsLoading(false);
     }
   };
+  
 
   const handleRefresh = async () => {
     try {

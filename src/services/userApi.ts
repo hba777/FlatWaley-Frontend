@@ -250,9 +250,9 @@ class UserApiService {
     }
   }
 
-  async getLikedProfiles(): Promise<UserProfileData[]> {
+  async getLikedProfiles(): Promise<string[]> {
     try {
-      const response = await api.get<UserProfileData[]>(
+      const response = await api.get<string[]>(
         "/users/liked-profiles"
       );
       return response.data;
